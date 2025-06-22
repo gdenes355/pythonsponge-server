@@ -61,28 +61,6 @@ git --version
 echo -n "🌐 Nginx version: "
 nginx -v 2>&1
 
-# === Install virtualenvwrapper globally ===
-echo "📦 Installing virtualenvwrapper (with --break-system-packages)..."
-sudo pip3 install --break-system-packages virtualenvwrapper
-
-echo -n "🧰 virtualenvwrapper installed at: "
-which virtualenvwrapper.sh
-
-# === Configure global virtualenvwrapper environment ===
-if [ ! -f "$VENVWRAPPER_PROFILE" ]; then
-    echo "⚙️ Writing global virtualenvwrapper configuration to $VENVWRAPPER_PROFILE..."
-    sudo tee "$VENVWRAPPER_PROFILE" > /dev/null <<EOF
-# Global virtualenvwrapper setup — uses $SERVICE_USER's environment
-export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-export WORKON_HOME=$USER_HOME/.virtualenvs
-export PROJECT_HOME=$DEPLOYED_DIR
-source /usr/local/bin/virtualenvwrapper.sh
-EOF
-    echo "✅ Global virtualenvwrapper config written."
-else
-    echo "ℹ️ Global virtualenvwrapper config already exists. Skipping."
-fi
-
 # === Limit systemd journal log size ===
 echo "📝 Limiting systemd journal log size..."
 
@@ -125,8 +103,6 @@ set -e
 
 echo "👤 Current user: $(whoami)"
 
-WORKON_HOME="$USER_HOME/.virtualenvs"
-
 echo "📁 Creating folder structure..."
 mkdir -p "$PROJECT_HOME/app" "$PROJECT_HOME/env" "$PROJECT_HOME/server"
 
@@ -141,21 +117,18 @@ else
     git -C "$PROJECT_HOME/server" pull
 fi
 
-echo "🐍 Creating virtual environment 'py_server'..."
-export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-export WORKON_HOME="$WORKON_HOME"
-export PROJECT_HOME="$PROJECT_HOME"
-source /usr/local/bin/virtualenvwrapper.sh
-
-if [ ! -d "$WORKON_HOME/py_server" ]; then
-    mkvirtualenv -p python3 -a "$PROJECT_HOME/server" py_server
-    echo "✅ Virtualenv 'py_server' created."
+VENV_DIR="$PROJECT_HOME/server/.venv"
+echo "🐍 Creating virtual environment in $VENV_DIR..."
+if [ ! -d "\$VENV_DIR" ]; then
+    echo "📁 Creating virtual environment at \$VENV_DIR"
+    python3 -m venv "\$VENV_DIR"
+    echo "✅ Virtual environment created."
 else
-    echo "ℹ️ Virtualenv 'py_server' already exists. Skipping."
+    echo "ℹ️ Virtual environment already exists. Skipping creation."
 fi
 
-echo "✅ Activating environment and installing requirements..."
-workon py_server
+echo "✅ Activating virtual environment and installing dependencies..."
+source "\$VENV_DIR/bin/activate"
 
 cd "$PROJECT_HOME/server"
 if [ -f requirements.txt ]; then

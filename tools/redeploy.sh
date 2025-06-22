@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-VIRTUALENVS_DIR=/home/pythonsponge/.virtualenvs
 SOURCES_DIR=/home/pythonsponge/deployed
 
 if [ "$1" = "--silent" ]; then
 	cd "$SOURCES_DIR/server" \
-	  && source "$VIRTUALENVS_DIR/py_server/bin/activate" \
+	  && source ".venv/bin/activate" \
 	  && git clean -f \
 	  && git pull \
 	  && pip install -r requirements.txt \
@@ -14,7 +13,7 @@ if [ "$1" = "--silent" ]; then
 	echo "Finished"
 else
 	cd "$SOURCES_DIR/server" \
-	  && source "$VIRTUALENVS_DIR/py_server/bin/activate" \
+	  && source ".venv/bin/activate" \
 	  && git clean -f \
 	  && git pull \
 	  && pip install -r requirements.txt \

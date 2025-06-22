@@ -1,7 +1,6 @@
 #! /bin/bash
 
 
-VIRTUALENVS_DIR=/home/pythonsponge/.virtualenvs
 SERVER_DIR=/home/pythonsponge/deployed/server
 ENV_FILES_DIR=/home/pythonsponge/deployed/env
 
@@ -14,7 +13,7 @@ function export_env_vars {
 
 
 echo "STARTING websocket_server" \
-      && source "$VIRTUALENVS_DIR/py_server/bin/activate" \
-      && cd "$SERVER_DIR" \
-      && export_env_vars "$ENV_FILES_DIR/.env" \
-      && python -m ws_server.main
+    && cd "$SERVER_DIR" \
+    && source ".venv/bin/activate" \
+    && export_env_vars "$ENV_FILES_DIR/.env" \
+    && python -m ws_server.main

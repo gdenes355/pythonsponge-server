@@ -2,12 +2,37 @@
 
 set -e  # Exit on error
 
+CONFIG_FILE="pythonsponge-config.env"
+
+# === Ensure config file is present ===
+if [ ! -f "$CONFIG_FILE" ]; then
+    CONFIG_URL="https://raw.githubusercontent.com/gdenes355/pythonsponge-server/main/config/install/$CONFIG_FILE"
+    echo "📄 Configuration file '$CONFIG_FILE' not found."
+    echo "🌐 Downloading from $CONFIG_URL..."
+    curl -fsSL "$CONFIG_URL" -o "$CONFIG_FILE"
+    echo "✅ '$CONFIG_FILE' downloaded."
+    echo "🛠️  Please open and edit '$CONFIG_FILE' to complete your setup."
+    echo "Install.sh is quitting for now. Rerun once the config is completed"
+    exit 0
+fi
+
 # === CONFIGURATION ===
-SERVICE_USER="pythonsponge"
-USER_HOME="/home/$SERVICE_USER"
-DEPLOYED_DIR="$USER_HOME/deployed"
 REPO_URL="https://github.com/gdenes355/pythonsponge-server.git"
 VENVWRAPPER_PROFILE="/etc/profile.d/virtualenvwrapper.sh"
+
+
+# === Load config values into environment ===
+echo "🔄 Loading configuration from '$CONFIG_FILE'..."
+set -a
+. "./$CONFIG_FILE"
+set +a
+
+
+echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
+
+# === CONFIGURATION ===
+USER_HOME="/home/$SERVICE_USER"
+DEPLOYED_DIR="$USER_HOME/deployed"
 
 echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
 
@@ -92,15 +117,15 @@ fi
 # === Main setup as service user ===
 echo "👤 Switching to '$SERVICE_USER' for application setup..."
 
-sudo -i -u "$SERVICE_USER" bash <<'EOF'
+env USER_HOME="/home/$SERVICE_USER" \
+    PROJECT_HOME="/home/$SERVICE_USER/deployed" \
+    REPO_URL="$REPO_URL" \
+    sudo -u "$SERVICE_USER" bash <<'EOF'
 set -e
 
 echo "👤 Current user: $(whoami)"
 
-USER_HOME="/home/pythonsponge"
-PROJECT_HOME="$USER_HOME/deployed"
 WORKON_HOME="$USER_HOME/.virtualenvs"
-REPO_URL="https://github.com/gdenes355/pythonsponge-server.git"
 
 echo "📁 Creating folder structure..."
 mkdir -p "$PROJECT_HOME/app" "$PROJECT_HOME/env" "$PROJECT_HOME/server"
@@ -139,6 +164,8 @@ if [ -f requirements.txt ]; then
 else
     echo "⚠️ requirements.txt not found. Skipping."
 fi
+
+python3 tools/finalise_env.py "$SERVER_NAME" "$PROJECT_HOME"
 
 echo "🎉 PythonSponge server setup complete!"
 EOF

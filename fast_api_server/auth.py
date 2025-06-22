@@ -184,7 +184,7 @@ def _get_auth_required_response(reason: str):
     res = {
         'error': 'get-jwt',
         'reason': reason,
-        'authProvider': server_settings.auth_provider,
+        'auth_provider': server_settings.auth_provider,
         'jwtEndpoint': f'{server_settings.site_url}/api/token/',
         'resultsEndpoint': f'{server_settings.site_url}/api/results/',
         'wsEndPoint': server_settings.ws_url,

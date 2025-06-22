@@ -1,0 +1,9 @@
+[Unit]
+Description=PythonSponge WS backend
+
+[Service]
+User=pythonsponge
+ExecStart=/home/pythonsponge/deployed/server/tools/run_ws.sh
+
+[Install]
+WantedBy=multi-user.target

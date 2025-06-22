@@ -1,0 +1,9 @@
+[Unit]
+Description=PythonSponge API backend
+
+[Service]
+User=pythonsponge
+ExecStart=/home/pythonsponge/deployed/server/tools/run_fast_api_server.sh
+
+[Install]
+WantedBy=multi-user.target

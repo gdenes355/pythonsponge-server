@@ -30,7 +30,7 @@ class TokenDto(BaseModel):
 
 
 
-@auth_router.post('/token')
+@auth_router.post('/token', tags=['Authentication'], summary='Authentication')
 def exchange_token(body: Optional[TokenDto]):
     """Exchange credentials or tokens to receive a JWT token."""
     book_url = body.bookUrl
@@ -57,7 +57,7 @@ def exchange_token(body: Optional[TokenDto]):
     access_token = create_access_token(identity=email)
     return {'access_token': access_token}
 
-@auth_router.post('logout')
+@auth_router.post('logout', tags=['Authentication'], summary='Logout')
 def logout():
     """End the current session."""
     # as we are authenticating with a Bearer token, we could ban-list the token

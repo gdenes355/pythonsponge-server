@@ -11,12 +11,18 @@ from fast_api_server.auth import (
     get_current_user,
     register_auth_exception_handlers,
 )
+from fast_api_server.open_api_utils import customise_open_api
 
 from shared.db import database
 from shared.books_repository import BooksRepository
 from shared.server_settings import server_settings
 
 app = FastAPI()
+
+app.openapi_tags = [
+    {"name": "Teacher", "description": "Administrative routes"},
+    {"name": "Students", "description": "Student endpoints"},
+]
 
 register_auth_exception_handlers(app)
 
@@ -100,6 +106,10 @@ async def get_student_fashboard(user=Depends(get_current_user)):
    
 
 app.include_router(api_router)
+
+customise_open_api(app)  # just for redoc
+
+
 
 if __name__ == "__main__":
     if server_settings.is_debug:

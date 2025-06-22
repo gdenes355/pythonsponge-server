@@ -1,7 +1,7 @@
 #! /bin/bash
 
-SERVER_DIR=/home/pythonsponge/deployed/server
-ENV_FILES_DIR=/home/pythonsponge/deployed/env
+SERVER_DIR=/home/$USER/deployed/server
+ENV_FILES_DIR=/home/$USER/deployed/env
 
 
 function export_env_vars {

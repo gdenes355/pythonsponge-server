@@ -7,8 +7,8 @@ upstream ws_server {
 }
 
 server {
-		server_name www.pythonsponge.com;
-		add_header Access-Control-Allow-Origin "www.pythonsponge.com";
+		server_name $SERVER_NAME;
+		add_header Access-Control-Allow-Origin "$SERVER_NAME";
 		add_header Cross-Origin-Opener-Policy "same-origin";
 		add_header Cross-Origin-Embedder-Policy "require-corp";
 		listen [::]:443 ssl ipv6only=on;

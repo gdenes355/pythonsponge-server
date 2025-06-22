@@ -107,7 +107,7 @@ async def handle_incoming_packet(websocket, packet, user=None, book=None, is_adm
             del teacher_listeners[user]
 
 
-async def results(websocket):
+async def handle_ws_connection(websocket):
     user = None
     try:
         logger.info(f'Incoming connection')
@@ -126,7 +126,7 @@ async def results(websocket):
         print('terminating connection')
 
 async def main():
-     async with websockets.serve(results, 'localhost', 5002):
+     async with websockets.serve(handle_ws_connection, 'localhost', 5002):
         print("✅ WebSocket server started on ws://localhost:5002")
         await asyncio.Future()  # run forever
 

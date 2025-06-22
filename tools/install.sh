@@ -95,13 +95,12 @@ fi
 # === Main setup as service user ===
 echo "👤 Switching to '$SERVICE_USER' for application setup..."
 
-env USER_HOME="/home/$SERVICE_USER" \
-    PROJECT_HOME="/home/$SERVICE_USER/deployed" \
-    REPO_URL="$REPO_URL" \
-    sudo -u "$SERVICE_USER" bash <<'EOF'
+sudo -u "$SERVICE_USER" bash <<EOF
 set -e
 
 echo "👤 Current user: $(whoami)"
+
+echo "📂 PROJECT_HOME = \$PROJECT_HOME"
 
 echo "📁 Creating folder structure..."
 mkdir -p "$PROJECT_HOME/app" "$PROJECT_HOME/env" "$PROJECT_HOME/server"

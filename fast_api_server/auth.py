@@ -30,7 +30,9 @@ db = database.get_database()
 
 class TokenDto(BaseModel):
     msal_access_token: str
-    book_url: Optional[str]
+    bookUrl: Optional[str]
+
+
 
 @auth_router.post('/token/')
 def exchange_token(body: Optional[TokenDto]):
@@ -38,9 +40,10 @@ def exchange_token(body: Optional[TokenDto]):
         authentication endpoint. 
         trades a third party access token for our jwt access token
     """
-    if body.book_url != f"{server_settings.site_url}/admin" and \
-            body.book_url != f'{server_settings.site_url}/dashboard' and \
-            (not body.book_url or not body.book_url.startswith(f'{server_settings.site_url}/books/')):
+    book_url = body.bookUrl
+    if book_url != f"{server_settings.site_url}/admin" and \
+            book_url != f'{server_settings.site_url}/dashboard' and \
+            (not book_url or not book_url.startswith(f'{server_settings.site_url}/books/')):
         raise HTTPException(status_code=403, detail='invalid book path')
     
     if server_settings.auth_provider == AuthProvider.MSAL:
@@ -182,7 +185,7 @@ def _get_auth_required_response(reason: str):
     res = {
         'error': 'get-jwt',
         'reason': reason,
-        'auth_provider': server_settings.auth_provider,
+        'authProvider': server_settings.auth_provider,
         'jwtEndpoint': f'{server_settings.site_url}/api/token/',
         'resultsEndpoint': f'{server_settings.site_url}/api/results/',
         'wsEndPoint': server_settings.ws_url,
@@ -190,7 +193,7 @@ def _get_auth_required_response(reason: str):
     if server_settings.auth_provider == AuthProvider.MSAL:
         res.update({
             'tenantId': server_settings.msal_tenant_id,
-            'client_id': server_settings.msal_client_id,
+            'clientId': server_settings.msal_client_id,
         })
     elif server_settings.auth_provider == AuthProvider.GOOGLE:
         res.update({

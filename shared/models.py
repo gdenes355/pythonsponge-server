@@ -19,6 +19,14 @@ class BookNode(BaseModel):
 
 BOOK_NODE_FIELDS = set(BookNode.model_fields.keys())
 
+class ClassModel(BaseModel):
+    name: str
+    active: Optional[bool] = None
+    books: Optional[List[str]] = None
+    join_code: Optional[str] = None
+    disabled_books: Optional[List[str]] = None
+    students: List[str]
+
 class AuthProvider(StrEnum):
     MSAL = "MSAL"
     GOOGLE = "GOOGLE"

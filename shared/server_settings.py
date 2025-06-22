@@ -12,9 +12,9 @@ def _load_settings_from_env() -> ServerSettings:
     ws_url = f"wss://{server_name}/ws/" if server_name else 'ws://localhost:5002'
     return ServerSettings(
         is_debug=os.getenv('DEBUG', 'False').lower() in ('true', '1', 't'),
-        auth_provider=AuthProvider(os.getenv('AUTH_PROVIDER', None)) if os.getenv('AUTH_PROVIDER', None) else None,
+        auth_provider=AuthProvider(os.getenv('AUTH_PROVIDER', AuthProvider.MSAL)) if os.getenv('AUTH_PROVIDER', None) else None,
         google_client_id=os.getenv('GOOGLE_AUTH_CLIENT_ID', None),
-        msal_client_id=os.getenv('MSAL_AUTH_CLIENT_ID', None),
+        msal_client_id=os.getenv('MSAL_CLIENT_ID', None),
         msal_tenant_id=os.getenv('MSAL_TENANT_ID', None),
         utils_pwd=os.getenv('UTILS_PW', None),
         jwt_sercret_key=os.getenv('JWT_SECRET_KEY'),

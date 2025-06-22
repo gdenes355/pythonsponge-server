@@ -28,10 +28,7 @@ app.add_middleware(
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/protected")
-def protected(user=Depends(get_current_user)):
-    return {"hello": user}
-    
+   
 
 
 if __name__ == "__main__":

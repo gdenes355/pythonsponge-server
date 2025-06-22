@@ -4,7 +4,7 @@ from random import choices
 from typing import Optional, List
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore_async
 from google.cloud.firestore_v1.field_path import FieldPath
 
 from shared.db.database import Database

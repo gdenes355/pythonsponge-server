@@ -1,19 +1,29 @@
-from shared.server_settings import server_settings
+import os
 
-from fastapi import FastAPI, Depends
-
-from fast_api_server.auth import get_current_user, register_auth_exception_handlers, auth_router
-from fast_api_server.admin import admin_router
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, Response
+from pydantic import BaseModel
 
-
-app = FastAPI(
-    root_path="/api",
+from fast_api_server.admin import admin_router, is_admin
+from fast_api_server.auth import (
+    auth_router,
+    get_current_user,
+    register_auth_exception_handlers,
 )
 
+from shared.db import database
+from shared.server_settings import server_settings
+
+app = FastAPI()
+
 register_auth_exception_handlers(app)
-app.include_router(auth_router)
-app.include_router(admin_router)
+
+api_router = APIRouter(prefix='/api')
+api_router.include_router(auth_router)
+api_router.include_router(admin_router)
+
+db: database.Database = database.get_database()
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,13 +33,55 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/books/{path:path}")
+async def get_book_file(path: str, user=Depends(get_current_user)):
+    """Serve book contents"""
+    if "book.json" in path and not is_admin(user):
+        allowed_books = db.get_student_books(user)
+        if f"books/{path}" not in allowed_books:
+            raise HTTPException(status_code=403, detail="You do not have access to this book")
+        
+    if server_settings.is_debug:
+        full_path = os.path.join("books", path)
+        if not os.path.exists(full_path):
+            raise HTTPException(status_code=404, detail="Book not found")
+        return FileResponse(full_path)
+    else:
+        return Response(
+            content="",
+            media_type="application/octet-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Redirect": f"/books-internal/{path}"
+            }
+        )
+    
+@api_router.get('/results/')
+async def get_student_results(book: str, user=Depends(get_current_user)):
+    return {
+        'res': 'ok',
+        'data': await db.get_results_for_user(book=book, user=user)
+    }
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
+class StudentResultUpdate(BaseModel):
+   book: str
+   id: str
+   outcome: bool = False
+   is_long: bool = False
+   code: str = ''
+@api_router.post('/results/')
+async def post_result(body: StudentResultUpdate, user=Depends(get_current_user)):
+    await db.save_result(
+        book=body.book, 
+        user=user, 
+        challenge_id=body.id, 
+        outcome=body.outcome, 
+        code=body.code if body.is_long else body.code[:4000]
+    )
+    return {'res': 'ok'}
    
 
+app.include_router(api_router)
 
 if __name__ == "__main__":
     if server_settings.is_debug:

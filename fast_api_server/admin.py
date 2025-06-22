@@ -1,11 +1,12 @@
+import pathlib
+from typing import List, Optional, Union
+
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from shared.db import database
 from shared.server_settings import server_settings
 from fast_api_server.auth import get_current_user
-import pathlib
-from typing import Optional, Union, List
-from pydantic import BaseModel, Field
 
 admin_router = APIRouter(
     prefix='/admin'
@@ -13,10 +14,13 @@ admin_router = APIRouter(
 
 db: database.Database = database.get_database()
 
+def is_admin(user: str) -> bool:
+    return user.lower() in server_settings.admin_accounts
+
 def get_teacher_user(user=Depends(get_current_user)):
     if not user:
         raise HTTPException(status_code=403, detail='you need to be logged in')
-    if user.lower() not in server_settings.admin_accounts:
+    if not is_admin(user):
         raise HTTPException(status_code=403, detail='you need to be an admin')
     return user
 
@@ -37,7 +41,7 @@ async def get_classes(active: Optional[bool] = None, teacher_user=Depends(get_te
 class ClassCreationDto(BaseModel):
     class_name: str = Field(..., alias="class")
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 @admin_router.post('/classes')
 async def add_class(body: ClassCreationDto):
     await db.add_class(body.class_name)
@@ -94,12 +98,10 @@ async def get_class_results_for_book(class_name: str, book: str):
 
 class PatchResultDto(BaseModel):
     comment: str = ""
-@admin_router.patch('/students/{student}/books/{book:path}/results/{challenge:path}/comment')
+@admin_router.post('/students/{student}/books/{book:path}/results/{challenge:path}/comment')
 async def patch_result_with_comment(student: str, book: str, challenge: str, body: PatchResultDto):
     await db.add_result_comment(user=student, book=book, challenge=challenge, comment=body.comment)
     return {'res': 'succ'}
-
-    
 
 
 ## --------

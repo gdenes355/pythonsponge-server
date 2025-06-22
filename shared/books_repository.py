@@ -1,6 +1,8 @@
-from shared.server_settings import server_settings
 import json
 import os
+
+from shared.server_settings import server_settings
+
 
 class BooksRepository:
     def get_local_book_titles(self, current_app, book_urls):

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 from shared.models import ClassModel
 
@@ -22,7 +22,7 @@ class Database(ABC):
         pass
 
     @abstractmethod
-    async def save_result(self, book: str, user: str, outcome: bool, code: str):
+    async def save_result(self, book: str, user: str, challenge_id: str, outcome: bool, code: str):
         pass
 
     @abstractmethod

@@ -1,6 +1,7 @@
-from typing import List, Optional, Any
-from pydantic import BaseModel, Field
 from enum import StrEnum
+from typing import Any, List, Optional
+
+from pydantic import BaseModel, Field
 
 class BookNode(BaseModel):
     name: str

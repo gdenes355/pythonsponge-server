@@ -1,14 +1,14 @@
-from shared.db.database import Database
-from shared.models import ClassModel
-
+import datetime
 import urllib.parse
+from random import choices
 from typing import Optional, List
 
 import firebase_admin
-from firebase_admin import firestore, credentials, firestore_async
+from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.field_path import FieldPath
-import datetime
-from random import choices
+
+from shared.db.database import Database
+from shared.models import ClassModel
 
 
 class FirestoreDatabase(Database):
@@ -21,7 +21,7 @@ class FirestoreDatabase(Database):
 
         self.__user_books_cache = {}  # local cache of user to book. Rarely changes anyway
 
-    async def save_result(self, book: str, user: str, outcome: bool, code: str):
+    async def save_result(self, book: str, user: str, challenge_id: str, outcome: bool, code: str):
         user_standardised = self._standardise_username(user)
         document_id = self._get_result_doc_id(book, user_standardised)
         document_ref = self.__firestore.collection('results').document(document_id)
@@ -29,7 +29,7 @@ class FirestoreDatabase(Database):
         await document_ref.set({
             'book': book,
             'user': user_standardised,
-            id: update
+            challenge_id: update
         }, merge=True)
 
     async def get_results_for_user(self, book: str, user: str):
@@ -75,7 +75,7 @@ class FirestoreDatabase(Database):
 
         cache_line = self.__user_books_cache.get(user_standardised, None)
         if cache_line and (now - cache_line[0]).total_seconds() < 60:
-            return cache_line[1]  # use cache if no mode than 1 minute old
+            return cache_line[1]  # use cache if no more than 1 minute old
 
         books = set()
         classes = self.__firestore.collection('classes') \

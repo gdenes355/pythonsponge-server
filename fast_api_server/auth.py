@@ -1,24 +1,20 @@
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import Depends, Request, APIRouter, HTTPException
-from fastapi.responses import JSONResponse
-
-from cryptography.fernet import Fernet
-
-from datetime import datetime, timezone
 import json
-import jwt
 import re
-import requests
-
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Optional
-from datetime import timedelta
 
+import jwt
+import requests
+from cryptography.fernet import Fernet
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-from shared.server_settings import server_settings
-from shared.models import AuthProvider
 from shared.db import database
+from shared.models import AuthProvider
+from shared.server_settings import server_settings
 
 auth_router = APIRouter()
 

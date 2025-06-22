@@ -1,5 +1,7 @@
 import os
+
 from shared.models import ServerSettings, AuthProvider
+
 
 # add admin/teacher email addresses here
 __ADMINS = [

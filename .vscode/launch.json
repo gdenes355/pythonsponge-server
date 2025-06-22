@@ -8,11 +8,18 @@
             "module": "uvicorn",
             "args": [
                 "fast_api_server.main:app",
-                "--reload"
+                "--reload",
+                "--port", "5001"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "env": {
+                "JWT_SECRET_KEY": "please-change-me",
+                "ENC_KEY": "qN0MrQd968LRVNffCVP6EAtQ539gJWZRBYntQKexQhU=",
+                "GOOGLE_APPLICATION_CREDENTIALS": "pythonsponge-google-creds.json",
+                "DEBUG": "True"
+            }
         },
         {
             "name": "Websocket",
@@ -23,7 +30,11 @@
             "justMyCode": true,
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "JWT_SECRET_KEY": "please-change-me",
+                "ENC_KEY": "qN0MrQd968LRVNffCVP6EAtQ539gJWZRBYntQKexQhU=",
+                "GOOGLE_APPLICATION_CREDENTIALS": "pythonsponge-google-creds.json",
+                "DEBUG": "True"
             }
         }
     ]

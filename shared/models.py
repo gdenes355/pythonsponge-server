@@ -25,8 +25,17 @@ class AuthProvider(StrEnum):
 
 class ServerSettings(BaseModel):
     is_debug: bool
+    admin_accounts: List[str]
+
+    site_url: Optional[str]
+    ws_url: Optional[str]
+    server_dir: str
     auth_provider: Optional[AuthProvider]
 
     google_client_id: Optional[str]
-    utils_pwd: Optional[str]
+    msal_client_id: Optional[str]
+    msal_tenant_id: Optional[str]
 
+    utils_pwd: Optional[str]
+    jwt_sercret_key: Optional[str]
+    fernet_key: Optional[str]

@@ -34,12 +34,9 @@ class TokenDto(BaseModel):
 
 
 
-@auth_router.post('/token/')
+@auth_router.post('/token')
 def exchange_token(body: Optional[TokenDto]):
-    """
-        authentication endpoint. 
-        trades a third party access token for our jwt access token
-    """
+    """Exchange credentials or tokens to receive a JWT token."""
     book_url = body.bookUrl
     if book_url != f"{server_settings.site_url}/admin" and \
             book_url != f'{server_settings.site_url}/dashboard' and \
@@ -63,6 +60,12 @@ def exchange_token(body: Optional[TokenDto]):
     db.add_user_to_local_cache(email, name)
     access_token = create_access_token(identity=email)
     return {'access_token': access_token}
+
+@auth_router.post('logout')
+def logout():
+    """End the current session."""
+    # as we are authenticating with a Bearer token, we could ban-list the token
+    pass
 
 
 

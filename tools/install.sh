@@ -18,7 +18,6 @@ fi
 
 # === CONFIGURATION ===
 REPO_URL="https://github.com/gdenes355/pythonsponge-server.git"
-VENVWRAPPER_PROFILE="/etc/profile.d/virtualenvwrapper.sh"
 
 
 # === Load config values into environment ===
@@ -27,12 +26,6 @@ set -a
 . "./$CONFIG_FILE"
 set +a
 
-
-echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
-
-# === CONFIGURATION ===
-USER_HOME="/home/$SERVICE_USER"
-DEPLOYED_DIR="$USER_HOME/deployed"
 
 echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
 
@@ -92,32 +85,37 @@ else
     echo "⚠️  UFW not found. Skipping firewall rule setup."
 fi
 
+
+
 # === Main setup as service user ===
 echo "👤 Switching to '$SERVICE_USER' for application setup..."
 
 sudo -u "$SERVICE_USER" bash <<EOF
 set -e
 
-echo "👤 Current user: $(whoami)"
+DEPLOYED_DIR="/home/$SERVICE_USER/deployed"
+REPO_URL="$REPO_URL"
+SERVER_NAME="$SERVER_NAME"
 
-echo "📂 PROJECT_HOME = \$PROJECT_HOME"
+echo "👤 Current user: \$(whoami)"
+echo "📂 DEPLOYED_DIR = \$DEPLOYED_DIR"
 
 echo "📁 Creating folder structure..."
-mkdir -p "$PROJECT_HOME/app" "$PROJECT_HOME/env" "$PROJECT_HOME/server"
+mkdir -p "\$DEPLOYED_DIR/app" "\$DEPLOYED_DIR/env" "\$DEPLOYED_DIR/server"
 
 echo "🔄 Cloning repository or pulling latest changes..."
-if [ ! -d "$PROJECT_HOME/server/.git" ]; then
+if [ ! -d "\$DEPLOYED_DIR/server/.git" ]; then
     echo "📦 Cloning repository..."
-    git clone "$REPO_URL" "$PROJECT_HOME/server"
+    git clone "\$REPO_URL" "\$DEPLOYED_DIR/server"
     echo "⚙️  Configuring Git to avoid rebase on pull..."
-    git -C "$PROJECT_HOME/server" config pull.rebase false
+    git -C "\$DEPLOYED_DIR/server" config pull.rebase false
 else
     echo "✅ Repository already exists. Pulling latest changes..."
-    git -C "$PROJECT_HOME/server" pull
+    git -C "\$DEPLOYED_DIR/server" pull
 fi
 
-VENV_DIR="$PROJECT_HOME/server/.venv"
-echo "🐍 Creating virtual environment in $VENV_DIR..."
+VENV_DIR="\$DEPLOYED_DIR/server/.venv"
+echo "🐍 Creating virtual environment in \$VENV_DIR..."
 if [ ! -d "\$VENV_DIR" ]; then
     echo "📁 Creating virtual environment at \$VENV_DIR"
     python3 -m venv "\$VENV_DIR"
@@ -129,7 +127,7 @@ fi
 echo "✅ Activating virtual environment and installing dependencies..."
 source "\$VENV_DIR/bin/activate"
 
-cd "$PROJECT_HOME/server"
+cd "\$DEPLOYED_DIR/server"
 if [ -f requirements.txt ]; then
     pip install --no-cache-dir -r requirements.txt
     echo "✅ Dependencies installed."
@@ -137,7 +135,8 @@ else
     echo "⚠️ requirements.txt not found. Skipping."
 fi
 
-python3 tools/finalise_env.py "$SERVER_NAME" "$PROJECT_HOME"
+python3 tools/finalise_env.py "\$SERVER_NAME" "\$DEPLOYED_DIR"
 
 echo "🎉 PythonSponge server setup complete!"
 EOF
+

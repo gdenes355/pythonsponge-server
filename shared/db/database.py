@@ -10,7 +10,6 @@ class DatabaseType(StrEnum):
 
 class Database(ABC):
     def __init__(self) -> None:
-        self.book_title_cache = {}
         self._user_cache = {}
 
     @abstractmethod

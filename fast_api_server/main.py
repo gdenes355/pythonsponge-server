@@ -13,6 +13,7 @@ from fast_api_server.auth import (
 )
 
 from shared.db import database
+from shared.books_repository import BooksRepository
 from shared.server_settings import server_settings
 
 app = FastAPI()
@@ -24,6 +25,7 @@ api_router.include_router(auth_router)
 api_router.include_router(admin_router)
 
 db: database.Database = database.get_database()
+book_repo = BooksRepository()
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,8 +58,9 @@ async def get_book_file(path: str, user=Depends(get_current_user)):
             }
         )
     
-@api_router.get('/results/')
+@api_router.get('/results/', tags=["Student endpoints"], summary="Retrieve student progress")
 async def get_student_results(book: str, user=Depends(get_current_user)):
+    """Retrieve all test passes/fails for the student for a given book"""
     return {
         'res': 'ok',
         'data': await db.get_results_for_user(book=book, user=user)
@@ -69,8 +72,9 @@ class StudentResultUpdate(BaseModel):
    outcome: bool = False
    is_long: bool = False
    code: str = ''
-@api_router.post('/results/')
+@api_router.post('/results/', tags=["Student endpoints"], summary="Save student progress")
 async def post_result(body: StudentResultUpdate, user=Depends(get_current_user)):
+    """Save student progress to the database."""
     await db.save_result(
         book=body.book, 
         user=user, 
@@ -79,6 +83,20 @@ async def post_result(body: StudentResultUpdate, user=Depends(get_current_user))
         code=body.code if body.is_long else body.code[:4000]
     )
     return {'res': 'ok'}
+
+
+@api_router.get('/student-dashboard', tags=["Student endpoints"], summary="Student entrypoint (list books)")
+async def get_student_fashboard(user=Depends(get_current_user)):
+    """Retrieve the list of books available to the student"""
+    books = await db.get_student_books(user)
+    book_titles = book_repo.get_local_book_titles(books)
+    return {
+        'res': 'succ',
+        'books': [{
+            'path': book,
+            'title': book_titles.get(book)
+        } for book in books]
+    }
    
 
 app.include_router(api_router)

@@ -5,10 +5,13 @@ from shared.server_settings import server_settings
 
 
 class BooksRepository:
-    def get_local_book_titles(self, current_app, book_urls):
+    def __init__(self):
+        self.book_title_cache = {}
+
+    def get_local_book_titles(self, book_urls):
         res = {}
         for url in book_urls:
-            book_path = url.replace(current_app.config['SITE_URL'], '')
+            book_path = url.replace(server_settings.site_url, '')
             if book_path not in self.book_title_cache:
                 if not book_path.startswith('books/') and not book_path.startswith('/books/'):
                     self.book_title_cache[book_path] = None

@@ -1,5 +1,5 @@
-import datetime
 import urllib.parse
+from datetime import datetime
 from random import choices
 from typing import Optional, List
 
@@ -84,7 +84,7 @@ class FirestoreDatabase(Database):
         async for klass in classes:
             books.update(klass._data['books'])
         cache_line = (now, list(books))
-        self.user_books_cache[user_standardised] = cache_line
+        self.__user_books_cache[user_standardised] = cache_line
         return cache_line[1]
     
     async def delete_user_names(self):

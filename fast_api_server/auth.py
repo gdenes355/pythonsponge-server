@@ -20,8 +20,6 @@ auth_router = APIRouter()
 
 fernet = Fernet(server_settings.fernet_key)
 
-ALGORITHM = 'HS256'
-
 db = database.get_database()
 
 class TokenDto(BaseModel):
@@ -91,7 +89,7 @@ def create_access_token(identity: str, expires_delta: timedelta = timedelta(hour
     to_encode = {'sub': identity_enc}
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, server_settings.jwt_sercret_key, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, server_settings.jwt_sercret_key, algorithm='HS256')
     return encoded_jwt
 
 
@@ -100,7 +98,7 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
         raise AuthError('jwt token required')
     token = credentials.credentials
     try:
-        payload = jwt.decode(token, server_settings.jwt_sercret_key, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, server_settings.jwt_sercret_key, algorithms=['HS256'])
         exp_timestamp = payload['exp']
         now = datetime.now(timezone.utc)
         if now.timestamp() > exp_timestamp:

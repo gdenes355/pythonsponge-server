@@ -14,8 +14,9 @@ server {
 		listen [::]:443 ssl ipv6only=on;
         listen 443 ssl;
         
-		ssl_certificate /home/pythonsponge/deployed/env/fullchain.pem; # from Cloudflare
-		ssl_certificate_key /home/pythonsponge/deployed/env/privkey.pem; # from Cloudflare
+		# replace with your own certs if needed
+		ssl_certificate /etc/letsencrypt/live/$SERVER_NAME/fullchain.pem;
+		ssl_certificate_key /etc/letsencrypt/live/$SERVER_NAME/privkey.pem;
 
         client_max_body_size 80m;
 

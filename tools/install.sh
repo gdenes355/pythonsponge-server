@@ -60,7 +60,7 @@ fi
 # === Install system packages ===
 echo "⬇️ Installing required packages..."
 sudo apt update
-sudo apt install -y git python3 python3-pip python3-venv nginx
+sudo apt install -y git python3 python3-pip python3-venv nginx certbot python3-certbot-nginx
 
 echo -n "🐍 Python version: "
 python3 --version
@@ -73,6 +73,9 @@ git --version
 
 echo -n "🌐 Nginx version: "
 nginx -v 2>&1
+
+echo -n "🌐 Certbot version: "
+certbot -v
 
 # === Limit systemd journal log size ===
 echo "📝 Limiting systemd journal log size..."
@@ -161,5 +164,9 @@ echo "🧪 Running finalise_env.py interactively..."
 
 sudo -i -u "$SERVICE_USER" bash -c "source /home/$SERVICE_USER/deployed/server/.venv/bin/activate && \
     python3 /home/$SERVICE_USER/deployed/server/tools/finalise_env.py '$SERVER_NAME' '/home/$SERVICE_USER/deployed' '$AUTH_PROVIDER'"
+
+echo "📝 Ensuring certificates via let's encrypt and certbot"
+sudo certbot --nginx -d $SERVER_NAME
+sudo systemctl status certbot.timer
 
 echo "🎉 PythonSponge server setup complete!"

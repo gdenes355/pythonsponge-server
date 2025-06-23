@@ -26,6 +26,26 @@ set -a
 . "./$CONFIG_FILE"
 set +a
 
+# 1. Check SERVICE_USER is set and not empty
+if [ -z "$SERVICE_USER" ]; then
+  echo "❌ Error: SERVICE_USER is not set."
+  exit 1
+fi
+
+# 2. Check AUTH_PROVIDER is set and not empty
+if [ -z "$AUTH_PROVIDER" ]; then
+  echo "❌ Error: AUTH_PROVIDER is not set."
+  exit 1
+fi
+
+# 3. Check SERVER_NAME is not blank or 'localhost'
+if [ -z "$SERVER_NAME" ] || [ "$SERVER_NAME" = "localhost" ]; then
+  echo "❌ Error: SERVER_NAME must be set and cannot be 'localhost'."
+  exit 1
+fi
+
+echo "✅ Environment checks passed."
+
 
 echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
 
@@ -96,6 +116,7 @@ set -e
 DEPLOYED_DIR="/home/$SERVICE_USER/deployed"
 REPO_URL="$REPO_URL"
 SERVER_NAME="$SERVER_NAME"
+AUTH_PROVIDER="$AUTH_PROVIDER"
 
 echo "👤 Current user: \$(whoami)"
 echo "📂 DEPLOYED_DIR = \$DEPLOYED_DIR"
@@ -135,7 +156,7 @@ else
     echo "⚠️ requirements.txt not found. Skipping."
 fi
 
-python3 tools/finalise_env.py "\$SERVER_NAME" "\$DEPLOYED_DIR"
+python3 tools/finalise_env.py "\$SERVER_NAME" "\$DEPLOYED_DIR" "\$AUTH_PROVIDER"
 
 echo "🎉 PythonSponge server setup complete!"
 EOF

@@ -204,4 +204,15 @@ else
     echo "⚠️  Warning: ws_server.service not found in expected location."
 fi
 
+echo "🔧 Granting passwordless sudo access to restart services for $SERVICE_USER..."
+SUDOERS_FILE="/etc/sudoers.d/pythonsponge-restarts"
+
+if [ ! -f "$SUDOERS_FILE" ]; then
+    echo "🔧 Granting passwordless sudo access to restart services for $SERVICE_USER..."
+    echo "$SERVICE_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart flask_server.service, /bin/systemctl restart ws_server.service" | sudo tee "$SUDOERS_FILE" > /dev/null
+    sudo chmod 440 "$SUDOERS_FILE"
+else
+    echo "✅ Sudoers file already exists at $SUDOERS_FILE. Skipping."
+fi
+
 echo "🎉 PythonSponge server setup complete!"

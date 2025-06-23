@@ -15,6 +15,7 @@ print_help() {
     echo
     echo "Available commands:"
     echo "  redeploy            Pulls latest server code and restarts the Python server"
+    echo "  pull-server-latest  Pulls the latest Git version of the Python server"
     echo "  restart-nginx       Updates nginx config and restarts nginx"
     echo "  redeploy-frontend   Redeploys the frontend (React)"
     echo "  rerun-install       Downloads and reruns the full install script"
@@ -24,6 +25,10 @@ print_help() {
 case "$1" in
     redeploy)
         sudo "$SCRIPT_DIR/redeploy.sh"
+        ;;
+    pull-server-latest)
+        cd "$SCRIPT_DIR/.."  # assuming the repo is one level up from the script
+        git pull origin main
         ;;
     restart-nginx)
         sudo "$SCRIPT_DIR/restart-nginx.sh"

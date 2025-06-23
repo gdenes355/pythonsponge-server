@@ -34,5 +34,6 @@ for file in "$NGINX_SRC_DIR"/*; do
     cp "$NGINX_DEST_DIR/$filename" "$NGINX_ENABLED_DIR/$filename"
 done
 
+echo "🔁 Restarting nginx..."
 sudo systemctl stop nginx
 sudo systemctl start nginx

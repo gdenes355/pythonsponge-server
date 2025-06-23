@@ -16,10 +16,10 @@ export_env_vars() {
     fi
 }
 
-export_env_vars "$ENV_FILES_DIR/flask_server.env"
+export_env_vars "$ENV_FILES_DIR/.env"
 
 if [ -z "$SERVER_NAME" ]; then
-    echo "❌ SERVER_NAME is not set in $ENV_FILES_DIR/flask_server.env"
+    echo "❌ SERVER_NAME is not set in $ENV_FILES_DIR/.env"
     exit 1
 fi
 

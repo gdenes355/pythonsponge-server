@@ -14,12 +14,7 @@
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "env": {
-                "JWT_SECRET_KEY": "please-change-me",
-                "ENC_KEY": "qN0MrQd968LRVNffCVP6EAtQ539gJWZRBYntQKexQhU=",
-                "GOOGLE_APPLICATION_CREDENTIALS": "pythonsponge-google-creds.json",
-                "DEBUG": "True"
-            }
+            "envFile": "${workspaceFolder}/.env"
         },
         {
             "name": "Websocket",
@@ -31,11 +26,8 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
-                "JWT_SECRET_KEY": "please-change-me",
-                "ENC_KEY": "qN0MrQd968LRVNffCVP6EAtQ539gJWZRBYntQKexQhU=",
-                "GOOGLE_APPLICATION_CREDENTIALS": "pythonsponge-google-creds.json",
-                "DEBUG": "True"
-            }
+            },
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

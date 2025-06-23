@@ -141,6 +141,10 @@ echo "📂 DEPLOYED_DIR = \$DEPLOYED_DIR"
 echo "📁 Creating folder structure..."
 mkdir -p "\$DEPLOYED_DIR/app" "\$DEPLOYED_DIR/env" "\$DEPLOYED_DIR/server"
 
+echo "ensuring correct permissions"
+chmod go+x ~
+chmod go-x "\$DEPLOYED_DIR/env" 
+
 echo "🔄 Cloning repository or pulling latest changes..."
 if [ ! -d "\$DEPLOYED_DIR/server/.git" ]; then
     echo "📦 Cloning repository..."

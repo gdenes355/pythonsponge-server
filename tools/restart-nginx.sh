@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SOURCES_DIR=/home/$USER/deployed
+SOURCES_DIR=/home/pythonsponge/deployed
 ENV_FILES_DIR="$SOURCES_DIR/env"
 NGINX_SRC_DIR="$SOURCES_DIR/server/tools/nginx/sites-available"
 NGINX_DEST_DIR=/etc/nginx/sites-available

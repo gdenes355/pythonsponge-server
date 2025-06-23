@@ -2,11 +2,13 @@ import pathlib
 from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from shared.db import database
 from shared.server_settings import server_settings
 from fast_api_server.auth import get_current_user
+from fast_api_server.utils.excel_export_utils import write_results_to_xlsx
 
 admin_router = APIRouter(
     prefix='/admin'
@@ -154,3 +156,24 @@ async def refresh_cached_names():
         'res': 'succ',
         'data': {'cache-size': db.get_user_name_cache_size()},
     }
+
+@admin_router.get('/classes/{class_name}/results/export', tags=['Results management'], summary='Export grade book')
+async def export_results(class_name: str):
+    """Export test case progress for all students for all books in a class"""
+    klass = await db.get_class(class_name=class_name)
+    if not klass:
+        raise HTTPException(status_code=404, detail="class not found")
+    
+    results_buffer = await write_results_to_xlsx(klass=klass)
+    results_buffer.seek(0)
+    headers = {
+        "Content-Disposition": f'attachment; filename="{klass.name}.xlsx"',
+    }
+    return StreamingResponse(
+        results_buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers=headers
+    )
+
+
+

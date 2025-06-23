@@ -11,7 +11,7 @@ from fast_api_server.auth import (
     get_current_user,
     register_auth_exception_handlers,
 )
-from fast_api_server.open_api_utils import customise_open_api
+from fast_api_server.utils.open_api_utils import customise_open_api
 
 from shared.db import database
 from shared.books_repository import BooksRepository

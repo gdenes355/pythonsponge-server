@@ -1,6 +1,8 @@
 import json
 import os
+from typing import List
 
+from shared.models import BookNode
 from shared.server_settings import server_settings
 
 
@@ -29,3 +31,30 @@ class BooksRepository:
                     continue
             res[url] = self.book_title_cache[book_path]
         return res
+    
+    def _book_path_to_local_path(self, book_path):
+        book_path = book_path.replace(server_settings.site_url, '')
+        return os.path.normpath(f'{server_settings.server_dir}/{book_path}')
+
+    
+    def load_book(self, path: str) -> BookNode:
+        try:
+            with open(self._book_path_to_local_path(path), 'r') as f:
+                return BookNode(**json.load(f))
+                # TODO: handle nested books (bookLink)
+        except FileNotFoundError:
+            return None
+        except Exception as e:
+            print(e)
+            return None
+        
+    # find list of nodes with tests associated with them
+    def book_to_testable_node_list(self, node: BookNode, node_list: List[BookNode]=None):
+        if node_list is None:
+            node_list = []
+        if node.isExample or node.typ == 'parsons' or node.tests or node.isAssessment and node.py:
+            node_list.append(node)
+        if node.children:
+            for child in node.children:
+                self.book_to_testable_node_list(child, node_list)
+        return node_list

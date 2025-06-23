@@ -174,6 +174,3 @@ async def export_results(class_name: str, teacher_user=Depends(get_teacher_user)
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers=headers
     )
-
-
-

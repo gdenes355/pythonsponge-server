@@ -34,3 +34,20 @@ curl -fsSL https://raw.githubusercontent.com/gdenes355/pythonsponge-server/main/
 chmod +x install.sh
 sudo ./install.sh
 ```
+
+### Server scripts
+After setting up your server, the following will be available.
+
+#### Redeploy server
+Run `sudo /home/pythonsponge/deployed/server/tools/redeploy.sh` to refetch the git repository, install requirements and to (re)launch the servers.
+
+#### Restart nginx
+This should only be necessary if the nginx config files were altered. In this case, run `sudo /home/pythonsponge/deployed/server/tools/restart-nginx.sh`.
+
+#### Rerun installation
+The installatin script is idempotent and can be rerun at any point to retrigger all setup steps
+```
+curl -fsSL https://raw.githubusercontent.com/gdenes355/pythonsponge-server/main/tools/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
+```

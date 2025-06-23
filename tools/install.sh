@@ -136,9 +136,9 @@ else
 fi
 
 VENV_DIR="\$DEPLOYED_DIR/server/.venv"
-echo "🐍 Creating virtual environment in \$VENV_DIR..."
+echo "🐍 Creating virtual environment \$VENV_DIR..."
 if [ ! -d "\$VENV_DIR" ]; then
-    echo "📁 Creating virtual environment at \$VENV_DIR"
+    echo "📁 Creating new virtual environment at \$VENV_DIR"
     python3 -m venv "\$VENV_DIR"
     echo "✅ Virtual environment created."
 else

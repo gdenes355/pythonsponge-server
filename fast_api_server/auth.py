@@ -106,9 +106,9 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
         sub = payload['sub']
         return fernet.decrypt(sub.encode('utf-8')).decode('utf-8')
     except jwt.ExpiredSignatureError:
-        AuthError("jwt token expired")
+        raise AuthError("jwt token expired")
     except jwt.InvalidTokenError:
-        AuthError("jwt token invalid")
+        raise AuthError("jwt token invalid")
 
 _google_keys = None
 _google_keys_last_fetched = None

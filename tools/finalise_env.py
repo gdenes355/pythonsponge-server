@@ -57,11 +57,9 @@ def main():
     print(f"📝 Creating {env_path}... Populating values...")
     env_path.parent.mkdir(parents=True, exist_ok=True)
 
-    values.update({
-        'DEBUG': 'False',
-        'SERVER_NAME': server_name,
-        'AUTH_PROVIDER': auth_provider,
-    })
+    values['DEBUG'] = 'False'
+    values['SERVER_NAME'] = server_name
+    values['AUTH_PROVIDER'] = auth_provider
 
     if 'GOOGLE_APPLICATION_CREDENTIALS' not in values:
         values['GOOGLE_APPLICATION_CREDENTIALS'] = 'pythonsponge-google-creds.json'

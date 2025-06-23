@@ -110,7 +110,7 @@ fi
 # === Main setup as service user ===
 echo "👤 Switching to '$SERVICE_USER' for application setup..."
 
-sudo -u "$SERVICE_USER" bash <<EOF
+sudo -u "$SERVICE_USER" bash -c <<EOF
 set -e
 
 DEPLOYED_DIR="/home/$SERVICE_USER/deployed"

@@ -217,4 +217,25 @@ fi
 
 systemctl daemon-reload
 
+# === Create symbolic link for management tool ===
+echo "🛠️  Creating pythonsponge management command..."
+
+LINK_NAME="/usr/local/bin/pythonsponge"
+TARGET_SCRIPT="/home/$SERVICE_USER/deployed/server/tools/pythonsponge.sh"
+
+if [ -L "$LINK_NAME" ]; then
+    if [ "$(readlink "$LINK_NAME")" = "$TARGET_SCRIPT" ]; then
+        echo "🔗 Symbolic link '$LINK_NAME' already exists and is correct. Skipping."
+    else
+        echo "♻️ Updating existing symbolic link '$LINK_NAME'..."
+        sudo ln -sf "$TARGET_SCRIPT" "$LINK_NAME"
+    fi
+elif [ -e "$LINK_NAME" ]; then
+    echo "❌ File '$LINK_NAME' exists and is not a symbolic link. Not overwriting."
+else
+    echo "🔗 Creating symbolic link '$LINK_NAME' -> '$TARGET_SCRIPT'"
+    sudo ln -s "$TARGET_SCRIPT" "$LINK_NAME"
+fi
+
+
 echo "🎉 PythonSponge server setup complete!"

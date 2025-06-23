@@ -1,12 +1,11 @@
 import os
 
+from shared.admin_list import ADMINS
 from shared.models import ServerSettings, AuthProvider
 
 
 # add admin/teacher email addresses here
-__ADMINS = [
-    # e.g. 'gdenes355@gmail.com',
-]
+
 
 def _load_settings_from_env() -> ServerSettings:
     server_name = os.getenv('SERVER_NAME', None)
@@ -20,7 +19,7 @@ def _load_settings_from_env() -> ServerSettings:
         msal_tenant_id=os.getenv('MSAL_TENANT_ID', None),
         utils_pwd=os.getenv('UTILS_PW', None),
         jwt_sercret_key=os.getenv('JWT_SECRET_KEY'),
-        admin_accounts=__ADMINS.copy(),
+        admin_accounts=ADMINS.copy(),
         server_dir = os.path.normpath(f'{os.getcwd()}'),
         fernet_key=os.getenv('ENC_KEY'),
         site_url=site_url,

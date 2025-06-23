@@ -27,8 +27,7 @@ case "$1" in
         sudo "$SCRIPT_DIR/redeploy.sh"
         ;;
     pull-server-latest)
-        cd "$SCRIPT_DIR/.."  # assuming the repo is one level up from the script
-        git pull origin main
+        sudo "$SCRIPT_DIR/pull-server-latest.sh"
         ;;
     restart-nginx)
         sudo "$SCRIPT_DIR/restart-nginx.sh"

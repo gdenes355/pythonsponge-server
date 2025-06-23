@@ -24,8 +24,8 @@ if [ -z "$SERVER_NAME" ]; then
 fi
 
 echo "🧹 Cleaning existing Nginx site configs..."
-rm /etc/nginx/sites-available/*
-rm /etc/nginx/sites-enabled/*
+sudo rm /etc/nginx/sites-available/*
+sudo rm /etc/nginx/sites-enabled/*
 
 echo "📄 Preparing new Nginx site configs..."
 for file in "$NGINX_SRC_DIR"/*; do

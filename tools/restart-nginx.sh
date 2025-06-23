@@ -34,9 +34,5 @@ for file in "$NGINX_SRC_DIR"/*; do
     cp "$NGINX_DEST_DIR/$filename" "$NGINX_ENABLED_DIR/$filename"
 done
 
-
-cp $SOURCES_DIR/server/tools/nginx/sites-available/* /etc/nginx/sites-available
-cp $SOURCES_DIR/server/tools/nginx/sites-available/* /etc/nginx/sites-enabled
-
 systemctl stop nginx
 systemctl start nginx

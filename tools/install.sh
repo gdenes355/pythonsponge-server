@@ -110,7 +110,7 @@ fi
 # === Main setup as service user ===
 echo "👤 Switching to '$SERVICE_USER' for application setup..."
 
-sudo -u "$SERVICE_USER" bash -c <<EOF
+sudo -u "$SERVICE_USER" bash <<EOF
 set -e
 
 DEPLOYED_DIR="/home/$SERVICE_USER/deployed"
@@ -155,9 +155,11 @@ if [ -f requirements.txt ]; then
 else
     echo "⚠️ requirements.txt not found. Skipping."
 fi
-
-python3 tools/finalise_env.py "\$SERVER_NAME" "\$DEPLOYED_DIR" "\$AUTH_PROVIDER"
-
-echo "🎉 PythonSponge server setup complete!"
 EOF
 
+echo "🧪 Running finalise_env.py interactively..."
+
+sudo -i -u "$SERVICE_USER" bash -c "source /home/$SERVICE_USER/deployed/server/.venv/bin/activate && \
+    python3 /home/$SERVICE_USER/deployed/server/tools/finalise_env.py '$SERVER_NAME' '/home/$SERVICE_USER/deployed' '$AUTH_PROVIDER'"
+
+echo "🎉 PythonSponge server setup complete!"

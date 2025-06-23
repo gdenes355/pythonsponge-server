@@ -45,7 +45,7 @@ app.add_middleware(
 async def get_book_file(path: str, user=Depends(get_current_user)):
     """Serve book contents"""
     if "book.json" in path and not is_admin(user):
-        allowed_books = db.get_student_books(user)
+        allowed_books = await db.get_student_books(user)
         if f"books/{path}" not in allowed_books:
             raise HTTPException(status_code=403, detail="You do not have access to this book")
         

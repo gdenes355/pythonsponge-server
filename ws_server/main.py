@@ -62,14 +62,14 @@ async def handle_incoming_packet(websocket, packet, user=None, book=None, is_adm
         if not is_long:
             code = code[:4000]
         if user and book and id:
-            await db.save_result(book, id, user, outcome, code)
+            await db.save_result(book=book, challenge_id=id, user=user, outcome=outcome, code=code)
             user_norm = user.split('@')[0].lower()
             for teacher in teacher_listeners:
                 if user_norm in teacher_listeners[teacher][0]:
                     await teacher_listeners[teacher][1].send(json.dumps({'cmd': 'teacher-update', 'code': code, 'outcome': outcome, 'ch-id': id, 'student': user_norm}))
     elif data.get('cmd') == 'get-results':
         if user and book:
-            results = await db.get_results_for_user(book, user)
+            results = await db.get_results_for_user(book=book, user=user)
             await websocket.send(json.dumps({'res': 'succ', 'data': results, 'i': data.get('i')}, default=str))
     elif data.get('cmd') == 'fetch':
         path: str = data.get('path')

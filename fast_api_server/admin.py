@@ -21,9 +21,9 @@ def is_admin(user: str) -> bool:
 
 def get_teacher_user(user=Depends(get_current_user)):
     if not user:
-        raise HTTPException(status_code=403, summary='you need to be logged in')
+        raise HTTPException(status_code=403, detail='you need to be logged in')
     if not is_admin(user):
-        raise HTTPException(status_code=403, summary='you need to be an admin')
+        raise HTTPException(status_code=403, detail='you need to be an admin')
     return user
 
 @admin_router.get('/token-test', tags=['Misc'], summary='Test token')

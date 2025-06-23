@@ -4,7 +4,7 @@ from random import choices
 from typing import Optional, List
 
 import firebase_admin
-from firebase_admin import credentials, firestore_async
+from firebase_admin import credentials, firestore_async, firestore
 from google.cloud.firestore_v1.field_path import FieldPath
 
 from shared.db.database import Database
@@ -17,7 +17,7 @@ class FirestoreDatabase(Database):
         super().__init__()
         cred = credentials.ApplicationDefault()
         firebase_admin.initialize_app(cred)
-        self.__firestore = firebase_admin.firestore_async.client()
+        self.__firestore = firestore_async.client()
 
         self.__user_books_cache = {}  # local cache of user to book. Rarely changes anyway
 

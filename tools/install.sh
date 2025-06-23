@@ -106,13 +106,6 @@ echo "🔁 Restarting systemd-journald..."
 sudo systemctl restart systemd-journald
 echo "✅ systemd journal log size limited."
 
-# === Enable and start Nginx ===
-echo "🌐 Enabling and starting Nginx..."
-sudo systemctl enable nginx
-sudo systemctl start nginx
-echo -n "✅ Nginx status: "
-systemctl is-active nginx
-
 # === Allow Nginx ports through UFW if available ===
 if command -v ufw &>/dev/null; then
     echo "🛡️  Allowing Nginx through UFW..."
@@ -186,5 +179,29 @@ sudo -i -u "$SERVICE_USER" bash -c "source /home/$SERVICE_USER/deployed/server/.
 echo "📝 Ensuring certificates via let's encrypt and certbot"
 sudo certbot --nginx -d $SERVER_NAME
 sudo systemctl status certbot.timer
+
+# === Restart Nginx ===
+echo "🌐 Restarting Nginx with new configs..."
+sudo systemctl enable nginx
+sudo /home/$SERVICE_USER/deployed/server/tools/restart-nginx.sh
+echo -n "✅ Nginx status: "
+systemctl is-active nginx
+
+echo "Creating services"
+# API server
+if [ -f "/home/$SERVICE_USER/deployed/server/config/services/fast_api_server.service" ]; then
+    echo "🔧 Installing fast_api_server.service..."
+    sudo cp "/home/$SERVICE_USER/deployed/server/config/services/fast_api_server.service" /etc/systemd/system/fast_api_server.service
+else
+    echo "⚠️  Warning: fast_api_server.service not found in expected location."
+fi
+
+# WebSocket server
+if [ -f "/home/$SERVICE_USER/deployed/server/config/services/ws_server.service" ]; then
+    echo "🔧 Installing ws_server.service..."
+    sudo cp "/home/$SERVICE_USER/deployed/server/config/services/ws_server.service" /etc/systemd/system/ws_server.service
+else
+    echo "⚠️  Warning: ws_server.service not found in expected location."
+fi
 
 echo "🎉 PythonSponge server setup complete!"

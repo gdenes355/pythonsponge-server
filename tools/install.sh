@@ -46,6 +46,20 @@ fi
 
 echo "✅ Environment checks passed."
 
+# === Show config summary and ask for confirmation ===
+echo ""
+echo "📋 Current configuration:"
+echo "   SERVICE_USER:   $SERVICE_USER"
+echo "   AUTH_PROVIDER:  $AUTH_PROVIDER"
+echo "   SERVER_NAME:    $SERVER_NAME"
+echo ""
+
+read -p "❓ Does this look correct? Type 'y' to continue: " CONFIRM
+if [ "$CONFIRM" != "y" ]; then
+    echo "❌ Aborting setup. Please review your configuration."
+    exit 1
+fi
+
 
 echo "🛠️  Initializing PythonSponge VM setup for user '$SERVICE_USER'..."
 
@@ -75,7 +89,7 @@ echo -n "🌐 Nginx version: "
 nginx -v 2>&1
 
 echo -n "🌐 Certbot version: "
-certbot -v
+sudo certbot --version
 
 # === Limit systemd journal log size ===
 echo "📝 Limiting systemd journal log size..."

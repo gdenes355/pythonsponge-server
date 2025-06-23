@@ -30,5 +30,7 @@ sudo apt install curl
 ```
 2. Download and run the machine setup script from this repository. This can be done automatically by running
 ```
-curl -fsSL https://raw.githubusercontent.com/gdenes355/pythonsponge-server/main/tools/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/gdenes355/pythonsponge-server/main/tools/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 ```

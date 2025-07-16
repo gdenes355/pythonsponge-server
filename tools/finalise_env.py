@@ -62,7 +62,8 @@ def main():
     values['AUTH_PROVIDER'] = auth_provider
 
     if 'GOOGLE_APPLICATION_CREDENTIALS' not in values:
-        values['GOOGLE_APPLICATION_CREDENTIALS'] = 'pythonsponge-google-creds.json'
+        # values['GOOGLE_APPLICATION_CREDENTIALS'] = 'pythonsponge-google-creds.json'  # not needed on Google machines
+        pass
     if 'ENC_KEY' not in values:
         values['ENC_KEY'] = generate_fernet_key()
     if 'JWT_SECRET_KEY' not in values:

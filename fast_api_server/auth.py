@@ -29,10 +29,11 @@ class TokenDto(BaseModel):
 
 
 @auth_router.post('/token', tags=['Authentication'], summary='Authentication')
-def exchange_token(body: Optional[TokenDto]):
+async def exchange_token(body: Optional[TokenDto]):
     """Exchange credentials or tokens to receive a JWT token."""
     book_url = body.bookUrl
-    if book_url != f"{server_settings.site_url}/admin" and \
+    if not server_settings.is_debug and \
+            book_url != f"{server_settings.site_url}/admin" and \
             book_url != f'{server_settings.site_url}/dashboard' and \
             (not book_url or not book_url.startswith(f'{server_settings.site_url}/books/')):
         raise HTTPException(status_code=403, detail='invalid book path')
@@ -51,7 +52,7 @@ def exchange_token(body: Optional[TokenDto]):
     # if not email.endswith('@myschool.com')
     #   return {'msg': 'invalid email domain'}, 403
 
-    db.add_user_to_local_cache(email, name)
+    await db.meet_user(email, name)
     access_token = create_access_token(identity=email)
     return {'access_token': access_token}
 

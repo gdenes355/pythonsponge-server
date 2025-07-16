@@ -9,7 +9,7 @@ from shared.models import ServerSettings, AuthProvider
 
 def _load_settings_from_env() -> ServerSettings:
     server_name = os.getenv('SERVER_NAME', None)
-    site_url = f"https://{server_name}" if server_name else 'http://localhost:5001'
+    site_url = f"https://{server_name}" if server_name else 'http://localhost:3000'
     ws_url = f"wss://{server_name}/ws/" if server_name else 'ws://localhost:5002'
     return ServerSettings(
         is_debug=os.getenv('DEBUG', 'False').lower() in ('true', '1', 't'),

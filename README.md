@@ -117,6 +117,20 @@ chmod +x install.sh
 sudo ./install.sh
 ```
 
+## Database
+The repo is structured such that you could plug in a variety of db solutions. The current public implementation supports **Google Firesfore / Firebase**.
+
+### Google Firestore / Firebase
+First, create a new Firebase project at https://console.firebase.google.com/. Enable the Firestore database.
+
+On the remote Google Cloud server this should automatically give you access to your database.
+
+To debug locally, at https://console.cloud.google.com/iam-admin/serviceaccounts you need to create a service account with the relevant permissions (`Cloud Datastore User`, `Datastream Service Agent`, `Firebase Realtime Database Service Agent`, `Firebase Rules Firestore Service Agent`, `Firestore Service Agent`).
+Go to Keys, and create a new key (json), and copy-paste its content into `pythonsponge-google-creds.json`
+
+
+
+
 # Local debugging
 
 The server can be run on localhost, which alongside a local instance of `python-frontend` allows end-to-end testing.

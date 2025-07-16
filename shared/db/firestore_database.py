@@ -40,6 +40,8 @@ class FirestoreDatabase(Database):
     async def get_results_for_users(self, book: str, users: List[str]):
         user_names_standardised = [self._standardise_username(user) for user in users]
         book_ids = [self._get_result_doc_id(book, username) for username in user_names_standardised]
+        if not book_ids:
+            return []
         docs = self.__firestore.collection('results')\
             .where(FieldPath.document_id(), 'in', book_ids).stream()
         data = [doc._data async for doc in docs]
@@ -87,15 +89,22 @@ class FirestoreDatabase(Database):
         self.__user_books_cache[user_standardised] = cache_line
         return cache_line[1]
     
+    async def meet_user(self, user: str, name: str):
+        super().meet_user(user, name)
+        user_standardised = self._standardise_username(user)
+        document_ref = self.__firestore.collection('users').document('all')
+        await document_ref.set({user_standardised: name}, merge=True)
+    
     async def delete_user_names(self):
         doc = self.__firestore.collection('users').document('all')
         await doc.delete()
-        self._user_cache = {}
+        super().delete_user_names()
+        
 
     async def refresh_user_name_cache(self):
         self._user_cache = {}
         doc = await self.__firestore.collection('users').document('all').get()
-        self._user_cache = doc._data
+        self._user_cache = doc._data if doc._data else {}
 
     async def get_classes(self, is_active: Optional[bool] = None) -> List[ClassModel]:
         classes = []

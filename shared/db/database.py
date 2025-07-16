@@ -12,12 +12,14 @@ class Database(ABC):
     def __init__(self) -> None:
         self._user_cache = {}
 
-    @abstractmethod
-    async def refresh_user_name_cache(self):
-        pass
+    async def meet_user(self, user: str, name: str):  # should extend in subclass to store in db
+        self._user_cache[self._standardise_username(user)] = name
+
+    async def delete_user_names(self):
+        self._user_cache = {}    # should extend in subclass to delete in db
 
     @abstractmethod
-    async def delete_user_names(self):
+    async def refresh_user_name_cache(self):
         pass
 
     @abstractmethod
@@ -73,9 +75,6 @@ class Database(ABC):
 
     def _standardise_username(self, user: str):
         return user.split('@')[0].lower()
-
-    def add_user_to_local_cache(self, user: str, name: str):
-        self._user_cache[self._standardise_username(user)] = name
 
     def get_user_name_from_local_cache(self, user: str) -> Optional[str]:
         return self._user_cache.get(self._standardise_username(user), None)

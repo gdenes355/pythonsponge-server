@@ -26,7 +26,7 @@ def get_teacher_user(user=Depends(get_current_user)):
         raise HTTPException(status_code=403, detail='you need to be an admin')
     return user
 
-@admin_router.get('/token-test', tags=['Misc'], summary='Test token')
+@admin_router.get('/token-test/', tags=['Misc'], summary='Test token')
 async def test_role(teacher_user=Depends(get_teacher_user)):
     """Test if the token is a valid admin token"""
     return {'res': 'succ'}

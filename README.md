@@ -123,13 +123,9 @@ The repo is structured such that you could plug in a variety of db solutions. Th
 ### Google Firestore / Firebase
 First, create a new Firebase project at https://console.firebase.google.com/. Enable the Firestore database.
 
-On the remote Google Cloud server this should automatically give you access to your database.
+Then on https://console.cloud.google.com/iam-admin/serviceaccounts you need to create a service account with the relevant permissions (`Cloud Datastore User`, `Datastream Service Agent`, `Firebase Realtime Database Service Agent`, `Firebase Rules Firestore Service Agent`, `Firestore Service Agent`).
 
-To debug locally, at https://console.cloud.google.com/iam-admin/serviceaccounts you need to create a service account with the relevant permissions (`Cloud Datastore User`, `Datastream Service Agent`, `Firebase Realtime Database Service Agent`, `Firebase Rules Firestore Service Agent`, `Firestore Service Agent`).
-Go to Keys, and create a new key (json), and copy-paste its content into `pythonsponge-google-creds.json`
-
-
-
+Configure your Google VM to use this service account (this will propagate roles and permissions automatically). For non-Google servers and local development, go to Keys, create a new key (json), and copy-paste its content into `pythonsponge-google-creds.json`
 
 # Local debugging
 

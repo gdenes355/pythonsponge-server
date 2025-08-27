@@ -2,21 +2,20 @@
 set -euo pipefail
 
 REPO="gdenes355/python-frontend"
-TAG="main"
 DEST_BASE="/home/pythonsponge/deployed"
 NEW_DIR="$DEST_BASE/app-new"
 OLD_DIR="$DEST_BASE/app-old"
 CURRENT_DIR="$DEST_BASE/app"
 
-# Fetch release info
-echo "Fetching release info for tag '$TAG'..."
-RELEASE_INFO=$(curl -sSfL "https://api.github.com/repos/$REPO/releases/tags/$TAG")
+# Fetch latest release info
+echo "Fetching latest release info..."
+RELEASE_INFO=$(curl -sSfL "https://api.github.com/repos/$REPO/releases/latest")
 
 # Get .zip asset URL
 ZIP_URL=$(echo "$RELEASE_INFO" | grep -Eo '"browser_download_url":\s*"[^"]+\.zip"' | cut -d '"' -f 4 | head -n 1)
 
 if [[ -z "$ZIP_URL" ]]; then
-  echo "❌ No .zip asset found in release tagged '$TAG'"
+  echo "❌ No .zip asset found in latest release"
   exit 1
 fi
 

@@ -160,7 +160,7 @@ This GitHub repository does not (and should not) contain any secret keys. The se
 * `DEBUG`: "TRUE" locally; "FALSE" on the server
 * `JWT_SECRET_KEY`: placeholder, feel free to replace
 * `ENC_KEY`: placeholder Fernet key, feel free to replace with any other valid Fernet key
-* `GOOGLE_APPLICATION_CREDENTIALS`: locally `pythonspongeperse-creds.json`, auto-populated by Google on the server.
+* `GOOGLE_APPLICATION_CREDENTIALS`: locally `pythonsponge-google-creds.json`, auto-populated by Google on the server.
 * `AUTH_PROVIDER`: `MSAL` or `GOOGLE`
 * `MSAL_CLIENT_ID`, `MSAL_TENANT_ID`: non-sensitive information for Microsoft login
 * `GOOGLE_AUTH_CLIENT_ID`, `GOOGLE_AUTH_CLIENT_SECRET`: information for Google login (**`GOOGLE_AUTH_CLIENT_SECRET` is sensitive**)

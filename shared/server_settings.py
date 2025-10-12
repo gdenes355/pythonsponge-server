@@ -23,7 +23,8 @@ def _load_settings_from_env() -> ServerSettings:
         server_dir = os.path.normpath(f'{os.getcwd()}'),
         fernet_key=os.getenv('ENC_KEY'),
         site_url=site_url,
-        ws_url=ws_url
+        ws_url=ws_url,
+        can_edit_books_folder=os.getenv('CAN_EDIT_BOOKS_FOLDER', 'False').lower() in ('true', '1', 't'),
     )
 
 server_settings = _load_settings_from_env()

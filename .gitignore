@@ -194,3 +194,4 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 pythonsponge-google-creds*
+books-bck/

@@ -74,7 +74,7 @@ fi
 # === Install system packages ===
 echo "⬇️ Installing required packages..."
 sudo apt update
-sudo apt install -y git python3 python3-pip python3-venv nginx certbot python3-certbot-nginx
+sudo apt install -y git python3 python3-pip python3-venv nginx certbot python3-certbot-nginx unzip zip
 
 echo -n "🐍 Python version: "
 python3 --version

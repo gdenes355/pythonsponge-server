@@ -115,6 +115,6 @@ if __name__ == "__main__":
     if server_settings.is_debug:
         print("Running in development mode")
         import uvicorn
-        uvicorn.run(app, host="0.0.0.0", port=5001)
+        uvicorn.run(app, host="0.0.0.0", port=5001, reload=True, reload_excludes=["books-bck/**", "books/**"])
     else:
         print("Running fastapi in prod locally is not allowed")

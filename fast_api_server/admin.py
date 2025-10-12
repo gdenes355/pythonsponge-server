@@ -1,7 +1,16 @@
+import json
+import uuid
+import zipfile
+import io
 import pathlib
+import os
+import shutil
+from collections import deque
+from datetime import datetime, timezone
 from typing import List, Optional, Union
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -29,7 +38,11 @@ def get_teacher_user(user=Depends(get_current_user)):
 @admin_router.get('/token-test/', tags=['Misc'], summary='Test token')
 async def test_role(teacher_user=Depends(get_teacher_user)):
     """Test if the token is a valid admin token"""
-    return {'res': 'succ'}
+    return {
+        'res': 'succ',
+        'canEditServerBooksFolder': server_settings.can_edit_books_folder,
+    }
+
 
 ## --------
 ## classes
@@ -115,18 +128,6 @@ async def patch_result_with_comment(student: str, book: str, challenge: str, bod
     await db.add_result_comment(user=student, book=book, challenge=challenge, comment=body.comment)
     return {'res': 'succ'}
 
-
-## --------
-## books
-## --------
-@admin_router.get('/books', tags=['Misc'], summary='Retrieve list of book URLs')
-async def get_books(teacher_user=Depends(get_teacher_user)):
-    """Retrieve list of book URLs"""
-    book_paths = ['/'.join(b.parts) for b in pathlib.Path('./books').rglob('book.json')]
-    return {
-        'res': 'succ',
-        'data': book_paths,
-    }
     
 ## --------
 ## name cache
@@ -174,3 +175,204 @@ async def export_results(class_name: str, teacher_user=Depends(get_teacher_user)
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers=headers
     )
+
+
+## --------
+## books
+## --------
+def _get_node_count_in_book(book: dict) -> int:
+    count = 1
+    q = deque([book])
+    while q:
+        node = q.popleft()
+        children = node.get('children', [])
+        if children:
+            q.extend(children)
+            count += len(children)
+    return count
+
+def _get_node_ids_in_book(book: dict) -> List[str]:
+    ids = set()
+    q = deque([book])
+    while q:
+        node = q.popleft()
+        ids.add(node.get('id'))
+        children = node.get('children', [])
+        if children:
+            q.extend(children)
+    return list(ids)
+
+def _sanitise_book_path(path: str, allow_new: bool = False) -> str:
+    if path.startswith(server_settings.site_url):
+        path = path[len(server_settings.site_url):]
+    if ".." in path or "~" in path or not path.endswith('book.json'):
+        raise HTTPException(status_code=400, detail='invalid path')
+    if path.startswith('books/'):
+        local_path = f'./{path}'
+    elif path.startswith('./books/'):
+        local_path = path
+    else:
+        raise HTTPException(status_code=400, detail='invalid path')
+    
+    if not allow_new and not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail='book not found')
+
+    return local_path
+
+def _back_up_book(path: str):
+    local_path = _sanitise_book_path(path)
+    folder_containing_book_json = pathlib.Path(os.path.dirname(local_path))
+    path_uri_encoded = quote(path, safe="")
+    file_path = f"./books-bck/{path_uri_encoded}--{int(datetime.now().timestamp())}.zip"
+    with zipfile.ZipFile(file_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for file_path in folder_containing_book_json.rglob("*"):  # recursively include all files/subfolders
+            if file_path.is_file():
+                # Arcname ensures relative paths inside the zip
+                zipf.write(file_path, arcname=file_path.relative_to(folder_containing_book_json))
+    return file_path
+
+def _wipe_book(path: str, leave_blank_folder: bool = False):
+    local_path = _sanitise_book_path(path)
+    folder_containing_book_json = pathlib.Path(os.path.dirname(local_path))
+    shutil.rmtree(folder_containing_book_json)
+    os.makedirs(folder_containing_book_json)
+
+def _restore_book_from_zip(local_path: str, zip_file):   
+    folder_containing_book_json = pathlib.Path(os.path.dirname(local_path))
+    with zipfile.ZipFile(zip_file, 'r') as zipf:
+        zipf.extractall(folder_containing_book_json)
+
+def create_example_book(local_path: str):
+    folder_containing_book_json = pathlib.Path(os.path.dirname(local_path))
+    # ensure folders exist all the way down
+    folder_containing_book_json.mkdir(parents=True, exist_ok=True)
+    with open(folder_containing_book_json / 'book.json', 'w') as f:
+        f.write(json.dumps({
+            'name': 'New book',
+            'id': str(uuid.uuid4()),
+            'children': [{
+                'id': str(uuid.uuid4()),
+                'name': 'Challenge 1',
+                'guide': 'c01.md',
+                'py': 'c01.py',
+            }],
+        }))
+    with open(folder_containing_book_json /  'c01.md', 'w') as f:
+        f.write('## Challenge 1\nAdd task here. Any valid markdown is fine.')
+    with open(folder_containing_book_json / 'c01.py', 'w') as f:
+        f.write('print("Hello, world!")')
+
+
+@admin_router.get('/books', tags=['Misc'], summary='Retrieve list of book URLs')
+async def get_books(teacher_user=Depends(get_teacher_user)):
+    """Retrieve list of book URLs"""
+    book_paths = ['/'.join(b.parts) for b in pathlib.Path('./books').rglob('book.json')]
+    return {
+        'res': 'succ',
+        'data': book_paths,
+    }
+
+@admin_router.get('/books/{path:path}/history', tags=['Misc'], summary='Retrieve book versions on the server')
+async def get_book_history(path: str, teacher_user=Depends(get_teacher_user)):
+    """Retrieve book versions on the server"""
+    local_path = _sanitise_book_path(path)
+
+    # load the book.json file
+    book_name = None
+    with open(local_path, 'r') as f:
+        book = json.load(f)
+        book_name = book.get('name')
+
+    history = []
+
+    # for history, start with the current revision
+    date_modified = datetime.fromtimestamp(os.path.getmtime(local_path), timezone.utc)
+    history.append({
+        'date': date_modified,
+        'version': 'current',
+        'nodeCount': _get_node_count_in_book(book),
+        'nodeIds': _get_node_ids_in_book(book),
+    })
+
+    # then get the previous revisions
+    backup_folder = pathlib.Path('./books-bck')
+    path_uri_encoded = quote(path, safe="")
+    zips = backup_folder.glob(f'{path_uri_encoded}-*.zip')
+    zips = sorted(zips, key=lambda x: int(x.stem.split('--')[1].split('.')[0]), reverse=True)
+    for zip in zips:
+        timestamp = int(zip.stem.split('--')[1].split('.')[0])
+        history.append({
+            'date': datetime.fromtimestamp(timestamp, timezone.utc),
+            'version': str(timestamp)   ,
+            'nodeCount': _get_node_count_in_book(book),
+        })
+
+    # return the data
+    return {
+        'res': 'succ',
+        'name': book_name,
+        'history': history,
+    }
+
+@admin_router.post('/books/{path:path}/history/{version}/download', tags=['Misc'], summary='Download current book version as zip')
+async def download_current_book_version(path: str, version: str, teacher_user=Depends(get_teacher_user)):
+    local_path = _sanitise_book_path(path)
+    folder_containing_book_json = pathlib.Path(os.path.dirname(local_path))
+
+    if version == 'current':
+        """Download current book version as zip"""
+        filename = f'{folder_containing_book_json.name}--current.zip'
+        zip_buffer = io.BytesIO()
+        # Create the in-memory ZIP
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in folder_containing_book_json.rglob("*"):  # recursively include all files/subfolders
+                if file_path.is_file():
+                    # Arcname ensures relative paths inside the zip
+                    zipf.write(file_path, arcname=file_path.relative_to(folder_containing_book_json))
+
+        # Move the buffer position back to the start
+        zip_buffer.seek(0)
+        
+    else:
+        filename = f'{folder_containing_book_json.name}--{version}.zip'
+        path_uri_encoded = quote(path, safe="")
+        backup_folder = pathlib.Path('./books-bck')
+        zip_path = backup_folder / f'{path_uri_encoded}--{version}.zip'
+        if not zip_path.exists():
+            raise HTTPException(status_code=404, detail='zip file not found')
+        zip_buffer = zip_path.open('rb')
+        zip_buffer.seek(0)
+
+    # Return as streaming response
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/x-zip-compressed",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        },
+    )
+    
+@admin_router.post('/books/{path:path}/history/new', tags=['Misc'], summary='Create a new book version')
+async def create_new_book_version(path: str, file: UploadFile, teacher_user=Depends(get_teacher_user)):
+    _back_up_book(path)
+    local_path = _sanitise_book_path(path)
+    _wipe_book(path, leave_blank_folder=True)
+    _restore_book_from_zip(local_path, file.file)
+    return {'res': 'succ'}
+
+@admin_router.post('/books/{path:path}', tags=['Misc'], summary='Create a new book')
+async def create_new_book(path: str, teacher_user=Depends(get_teacher_user)):
+    local_path = _sanitise_book_path(path, allow_new=True)
+    if os.path.exists(local_path):
+        raise HTTPException(status_code=400, detail='book already exists')
+    create_example_book(local_path)
+    return {'res': 'succ'}
+
+@admin_router.delete('/books/{path:path}', tags=['Misc'], summary='Delete a book')
+async def delete_book(path: str, teacher_user=Depends(get_teacher_user)):
+    _back_up_book(path)
+    local_path = _sanitise_book_path(path)
+    if not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail='book not found')
+    _wipe_book(path)
+    return {'res': 'succ'}

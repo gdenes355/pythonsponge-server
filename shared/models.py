@@ -40,6 +40,7 @@ class ServerSettings(BaseModel):
     ws_url: Optional[str]
     server_dir: str
     auth_provider: Optional[AuthProvider]
+    can_edit_books_folder: Optional[bool]
 
     google_client_id: Optional[str]
     msal_client_id: Optional[str]

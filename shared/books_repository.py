@@ -35,7 +35,6 @@ class BooksRepository:
     def _book_path_to_local_path(self, book_path):
         book_path = book_path.replace(server_settings.site_url, '')
         return os.path.normpath(f'{server_settings.server_dir}/{book_path}')
-
     
     def load_book(self, path: str) -> BookNode:
         try:

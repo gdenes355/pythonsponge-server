@@ -149,6 +149,7 @@ AUTH_PROVIDER=GOOGLE
 MSAL_CLIENT_ID=
 MSAL_TENANT_ID=
 DEBUG=True
+CAN_EDIT_BOOKS_FOLDER=True
 ```
 
 The project contains launch configurations for VSCode. Simply go to the `Run and Debug` panel and launch both FastAPI and Websockets (using the dropdown).
@@ -166,6 +167,7 @@ This GitHub repository does not (and should not) contain any secret keys. The se
 * `GOOGLE_AUTH_CLIENT_ID`, `GOOGLE_AUTH_CLIENT_SECRET`: information for Google login (**`GOOGLE_AUTH_CLIENT_SECRET` is sensitive**)
 * `RESULTS_PROTOCOL`: locally `ws` at the moment, but can be updated if needed. This determines whether the Flask server will try to promote the WebSocket endpoint.
 * `UTILS_PW`: locally `debugPassword`; this is the strong password that protects the `/api/utils/ip` endpoint (which reveals the server IP) — WIP
+* `CAN_EDIT_SERVER_BOOKS_FOLDER`: `True` or `False`; specifies whether the `/books/` folder can be edited on the server from the teacher portal. This should be false if you set up some git-based version control system, otherwise `True` makes most sense.
 
 Note that `pythonsponge-google-creds.json` is not committed to the repo. You will need to download the test service account's credentials from [https://console.cloud.google.com/iam-admin/iam](https://console.cloud.google.com/iam-admin/iam).
 

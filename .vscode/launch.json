@@ -8,8 +8,13 @@
             "module": "uvicorn",
             "args": [
                 "fast_api_server.main:app",
+                "--port", "5001",
                 "--reload",
-                "--port", "5001"
+                // "--reload-exclude", "books-bck",
+                // "--reload-exclude", "books",
+                "--reload-dir", "fast_api_server",
+                "--reload-dir", "shared",
+                "--log-level", "debug"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

@@ -167,7 +167,7 @@ This GitHub repository does not (and should not) contain any secret keys. The se
 * `RESULTS_PROTOCOL`: locally `ws` at the moment, but can be updated if needed. This determines whether the Flask server will try to promote the WebSocket endpoint.
 * `UTILS_PW`: locally `debugPassword`; this is the strong password that protects the `/api/utils/ip` endpoint (which reveals the server IP) — WIP
 
-Note that `pythonspongeperse-creds.json` is not committed to the repo. You will need to download the test service account's credentials from [https://console.cloud.google.com/iam-admin/iam](https://console.cloud.google.com/iam-admin/iam).
+Note that `pythonsponge-google-creds.json` is not committed to the repo. You will need to download the test service account's credentials from [https://console.cloud.google.com/iam-admin/iam](https://console.cloud.google.com/iam-admin/iam).
 
 # Contributing to the project
 

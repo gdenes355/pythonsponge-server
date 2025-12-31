@@ -45,7 +45,7 @@ def main():
     auth_provider = sys.argv[3]
     teacher_list = sys.argv[4]
     env_path = deployed_folder / "env" / ".env"
-    admin_list_path = deployed_folder / "shared" / "admin_list.py"
+    admin_list_path = deployed_folder / "server" / "shared" / "admin_list.py"
 
 
     if auth_provider and auth_provider not in {'MSAL', 'GOOGLE'}:

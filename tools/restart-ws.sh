@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sudo -n /usr/bin/systemctl restart ws_server
+sudo /bin/systemctl restart ws_server.service

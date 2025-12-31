@@ -189,9 +189,6 @@ echo "📝 Ensuring certificates via let's encrypt and certbot"
 sudo certbot --nginx -d $SERVER_NAME
 sudo systemctl status certbot.timer
 
-echo "Setting permissions for restart-ws.sh to be owned by sudo, but executable by anyone"
-sudo chmod 755 /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
-sudo chown root:root /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
 
 # === Restart Nginx ===
 echo "🌐 Restarting Nginx with new configs..."

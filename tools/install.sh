@@ -149,6 +149,11 @@ else
     git -C "\$DEPLOYED_DIR/server" pull
 fi
 
+echi "Setting permissions for restart-ws.sh to be owned by sudo, but executable by anyone"
+sudo chmod 755 /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
+sudo chown root:root /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
+
+
 VENV_DIR="\$DEPLOYED_DIR/server/.venv"
 echo "🐍 Creating virtual environment \$VENV_DIR..."
 if [ ! -d "\$VENV_DIR" ]; then

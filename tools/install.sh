@@ -86,7 +86,7 @@ echo -n "🔧 Git version: "
 git --version
 
 echo -n "🌐 Nginx version: "
-nginx -v 2>&1
+/usr/sbin/nginx -v 2>&1
 
 echo -n "🌐 Certbot version: "
 sudo certbot --version

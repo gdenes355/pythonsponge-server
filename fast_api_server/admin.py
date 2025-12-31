@@ -18,6 +18,7 @@ from shared.db import database
 from shared.server_settings import server_settings
 from fast_api_server.auth import get_current_user, is_admin
 from fast_api_server.utils.excel_export_utils import write_results_to_xlsx
+from shared.maintenance import MaintenanceService
 
 admin_router = APIRouter(
     prefix='/admin'
@@ -355,6 +356,7 @@ async def create_new_book_version(path: str, file: UploadFile, teacher_user=Depe
     local_path = _sanitise_book_path(path)
     _wipe_book(path, leave_blank_folder=True)
     _restore_book_from_zip(local_path, file.file)
+    MaintenanceService().restart_ws_server()  #  this is crucial, so we wipe the cache
     return {'res': 'succ'}
 
 @admin_router.post('/books/{path:path}', tags=['Misc'], summary='Create a new book')
@@ -372,4 +374,16 @@ async def delete_book(path: str, teacher_user=Depends(get_teacher_user)):
     if not os.path.exists(local_path):
         raise HTTPException(status_code=404, detail='book not found')
     _wipe_book(path)
+    return {'res': 'succ'}
+
+
+## ----------------
+## server tools
+## ----------------
+@admin_router.post('/restart-ws', tags=['Server tools'], summary='Restart the ws server')
+async def restart_ws_server(teacher_user=Depends(get_teacher_user)):
+    """Restart the ws server"""
+    res = MaintenanceService().restart_ws_server()
+    if res != 0:
+        raise HTTPException(status_code=500, detail='failed to restart ws server')
     return {'res': 'succ'}

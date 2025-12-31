@@ -44,6 +44,13 @@ if [ -z "$SERVER_NAME" ] || [ "$SERVER_NAME" = "localhost" ]; then
   exit 1
 fi
 
+
+# 4. Check TEACHER_LIST is set and not empty
+if [ -z "$TEACHER_LIST" ]; then
+  echo "❌ Error: TEACHER_LIST is not set."
+  exit 1
+fi
+
 echo "✅ Environment checks passed."
 
 # === Show config summary and ask for confirmation ===
@@ -52,6 +59,7 @@ echo "📋 Current configuration:"
 echo "   SERVICE_USER:   $SERVICE_USER"
 echo "   AUTH_PROVIDER:  $AUTH_PROVIDER"
 echo "   SERVER_NAME:    $SERVER_NAME"
+echo "   TEACHER_LIST:   $TEACHER_LIST"
 echo ""
 
 read -p "❓ Does this look correct? Type 'y' to continue: " CONFIRM
@@ -127,6 +135,7 @@ DEPLOYED_DIR="/home/$SERVICE_USER/deployed"
 REPO_URL="$REPO_URL"
 SERVER_NAME="$SERVER_NAME"
 AUTH_PROVIDER="$AUTH_PROVIDER"
+TEACHER_LIST="$TEACHER_LIST"
 
 echo "👤 Current user: \$(whoami)"
 echo "📂 DEPLOYED_DIR = \$DEPLOYED_DIR"
@@ -148,11 +157,6 @@ else
     echo "✅ Repository already exists. Pulling latest changes..."
     git -C "\$DEPLOYED_DIR/server" pull
 fi
-
-echo "Setting permissions for restart-ws.sh to be owned by sudo, but executable by anyone"
-sudo chmod 755 /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
-sudo chown root:root /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
-
 
 VENV_DIR="\$DEPLOYED_DIR/server/.venv"
 echo "🐍 Creating virtual environment \$VENV_DIR..."
@@ -179,11 +183,15 @@ EOF
 echo "🧪 Running finalise_env.py interactively..."
 
 sudo -i -u "$SERVICE_USER" bash -c "source /home/$SERVICE_USER/deployed/server/.venv/bin/activate && \
-    python3 /home/$SERVICE_USER/deployed/server/tools/finalise_env.py '$SERVER_NAME' '/home/$SERVICE_USER/deployed' '$AUTH_PROVIDER'"
+    python3 /home/$SERVICE_USER/deployed/server/tools/finalise_env.py '$SERVER_NAME' '/home/$SERVICE_USER/deployed' '$AUTH_PROVIDER' '$TEACHER_LIST'"
 
 echo "📝 Ensuring certificates via let's encrypt and certbot"
 sudo certbot --nginx -d $SERVER_NAME
 sudo systemctl status certbot.timer
+
+echo "Setting permissions for restart-ws.sh to be owned by sudo, but executable by anyone"
+sudo chmod 755 /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
+sudo chown root:root /home/$SERVICE_USER/deployed/server/tools/restart-ws.sh
 
 # === Restart Nginx ===
 echo "🌐 Restarting Nginx with new configs..."

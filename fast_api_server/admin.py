@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from shared.db import database
 from shared.server_settings import server_settings
-from fast_api_server.auth import get_current_user
+from fast_api_server.auth import get_current_user, is_admin
 from fast_api_server.utils.excel_export_utils import write_results_to_xlsx
 
 admin_router = APIRouter(
@@ -25,8 +25,6 @@ admin_router = APIRouter(
 
 db: database.Database = database.get_database()
 
-def is_admin(user: str) -> bool:
-    return user.lower() in server_settings.admin_accounts
 
 def get_teacher_user(user=Depends(get_current_user)):
     if not user:
@@ -40,7 +38,6 @@ async def test_role(teacher_user=Depends(get_teacher_user)):
     """Test if the token is a valid admin token"""
     return {
         'res': 'succ',
-        'canEditServerBooksFolder': server_settings.can_edit_books_folder,
     }
 
 

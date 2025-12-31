@@ -52,7 +52,7 @@ async def handle_incoming_packet(websocket, packet, user=None, book=None, is_adm
             if book not in books:
                 logger.error(f'{user} tried to connect to book {book} through WS. Not allowed.')
                 raise ValueError()
-            logger.info(f'{user} connected to book {book}')
+        logger.info(f'{user} connected to book {book}')
         return ['welcome', user, book]
     elif data.get('cmd') == 'set-result':
         id = data.get('id', None)
@@ -80,6 +80,9 @@ async def handle_incoming_packet(websocket, packet, user=None, book=None, is_adm
         path = path[len(server_settings.site_url + '/books'):]
 
         local_path = os.path.normpath(f'{BOOKS_DIR}{path}')
+        if "solutions/" in local_path and not is_admin:
+            await send_error(websocket, i)  # not allowed to access solutions as a student
+            return
         if local_path in file_cache:
             data = file_cache[local_path]
         else:

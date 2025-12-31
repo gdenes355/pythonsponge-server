@@ -86,8 +86,15 @@ security = OptionalHTTPBearer()
 
 
 def create_access_token(identity: str, expires_delta: timedelta = timedelta(hours=4)):
+    roles = []
+    if is_admin(identity):
+        roles.append('teacher')
+        if server_settings.can_edit_books_folder:
+            roles.append('book-uploader')
+    else:
+        roles.append('student')
     identity_enc = fernet.encrypt(identity.encode('utf-8')).decode('utf-8')
-    to_encode = {'sub': identity_enc}
+    to_encode = {'sub': identity_enc, 'roles': roles}
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, server_settings.jwt_sercret_key, algorithm='HS256')
@@ -110,6 +117,10 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
         raise AuthError("jwt token expired")
     except jwt.InvalidTokenError:
         raise AuthError("jwt token invalid")
+
+
+def is_admin(user: str) -> bool:
+    return user.lower() in server_settings.admin_accounts
 
 _google_keys = None
 _google_keys_last_fetched = None

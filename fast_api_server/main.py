@@ -5,11 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
-from fast_api_server.admin import admin_router, is_admin
+from fast_api_server.admin import admin_router
 from fast_api_server.auth import (
     auth_router,
     get_current_user,
     register_auth_exception_handlers,
+    is_admin
 )
 from fast_api_server.utils.open_api_utils import customise_open_api
 
@@ -48,6 +49,8 @@ async def get_book_file(path: str, user=Depends(get_current_user)):
         allowed_books = await db.get_student_books(user)
         if f"books/{path}" not in allowed_books:
             raise HTTPException(status_code=403, detail="You do not have access to this book")
+    if "solutions/" in path and not is_admin(user):
+        raise HTTPException(status_code=403, detail="You do not have access to solution files as a student")
         
     if server_settings.is_debug:
         full_path = os.path.join("books", path)

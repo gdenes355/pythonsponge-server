@@ -31,6 +31,6 @@ class MaintenanceService:
 
     def restart_ws_server(self):
         logger.info(f'Restarting ws server')
-        res = os.system(f'{server_settings.server_dir}/tools/restart-ws.sh')
+        res = os.system(f'sudo /bin/systemctl restart ws_server.service')
         logger.info(f'Restart ws server result: {res}')
         return res

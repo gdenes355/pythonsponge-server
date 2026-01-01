@@ -14,6 +14,8 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from shared.ai.client_factory import get_llm_client
+from shared.ai.prompts import teacher_solution_recommender
 from shared.db import database
 from shared.server_settings import server_settings
 from fast_api_server.auth import get_current_user, is_admin
@@ -387,3 +389,34 @@ async def restart_ws_server(teacher_user=Depends(get_teacher_user)):
     if res != 0:
         raise HTTPException(status_code=500, detail='failed to restart ws server')
     return {'res': 'succ'}
+
+## ----------------
+## AI helpers
+## ----------------
+class RecommendSolutionDto(BaseModel):
+    guide: str
+    starter_code: str
+@admin_router.post('/ai/teacher-solution-recommender', tags=['AI helpers'], summary='Generate a teacher solution recommender')
+async def recommend_solution(body: RecommendSolutionDto, teacher_user=Depends(get_teacher_user)):
+    """Recommend a solution to a challenge"""
+    if not body.guide:
+        raise HTTPException(status_code=400, detail='blank guide')
+    if not body.starter_code:
+        raise HTTPException(status_code=400, detail='blank starter code')
+
+    system_prompt = teacher_solution_recommender.get_system_prompt()
+    prompt = teacher_solution_recommender.get_prompt(body.guide, body.starter_code)
+    resp = get_llm_client().generate_text(system_prompt=system_prompt, prompt=prompt)
+    lines = resp.split('\n')
+    lines[0] = lines[0].replace('```python', '')
+    lines[-1] = lines[-1].replace('```', '')
+    if not lines[0].strip():
+        lines.pop(0)
+    if not lines[-1].strip():
+        lines.pop(-1)
+    resp = '\n'.join(lines)
+    
+    return {
+        'res': 'succ',
+        'data': resp
+    }

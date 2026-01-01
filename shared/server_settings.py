@@ -1,7 +1,7 @@
 import os
 
 from shared.admin_list import ADMINS
-from shared.models import ServerSettings, AuthProvider
+from shared.models import ServerSettings, AuthProvider, AIProvider
 
 
 # add admin/teacher email addresses here
@@ -25,6 +25,8 @@ def _load_settings_from_env() -> ServerSettings:
         site_url=site_url,
         ws_url=ws_url,
         can_edit_books_folder=os.getenv('CAN_EDIT_BOOKS_FOLDER', 'False').lower() in ('true', '1', 't'),
+        ai_provider=AIProvider(os.getenv('AI_PROVIDER', None)) if os.getenv('AI_PROVIDER', None) else None,
+        gemini_api_key=os.getenv('GEMINI_API_KEY', None),
     )
 
 server_settings = _load_settings_from_env()

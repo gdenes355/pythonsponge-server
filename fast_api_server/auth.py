@@ -93,6 +93,8 @@ def create_access_token(identity: str, expires_delta: timedelta = timedelta(hour
             roles.append('book-uploader')
     else:
         roles.append('student')
+    if server_settings.ai_provider is not None:
+        roles.append('ai-enabled')
     identity_enc = fernet.encrypt(identity.encode('utf-8')).decode('utf-8')
     to_encode = {'sub': identity_enc, 'roles': roles}
     expire = datetime.now(timezone.utc) + expires_delta

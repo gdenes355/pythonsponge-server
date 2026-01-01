@@ -32,6 +32,9 @@ class AuthProvider(StrEnum):
     MSAL = "MSAL"
     GOOGLE = "GOOGLE"
 
+class AIProvider(StrEnum):
+    GEMINI = "GEMINI"
+
 class ServerSettings(BaseModel):
     is_debug: bool
     admin_accounts: List[str]
@@ -49,3 +52,7 @@ class ServerSettings(BaseModel):
     utils_pwd: Optional[str]
     jwt_sercret_key: Optional[str]
     fernet_key: Optional[str]
+
+    # AI
+    ai_provider: Optional[AIProvider]
+    gemini_api_key: Optional[str]

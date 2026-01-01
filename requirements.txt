@@ -8,3 +8,6 @@ firebase-admin==6.9.0
 google-cloud-firestore==2.21.0
 openpyxl==3.1.5
 python-multipart==0.0.20
+
+
+google-genai==1.56.0

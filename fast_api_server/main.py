@@ -14,6 +14,7 @@ from fast_api_server.auth import (
 )
 from fast_api_server.utils.open_api_utils import customise_open_api
 
+from shared.ai.clients.gemini_client import GeminiClient
 from shared.db import database
 from shared.books_repository import BooksRepository
 from shared.server_settings import server_settings
@@ -106,7 +107,6 @@ async def get_student_fashboard(user=Depends(get_current_user)):
             'title': book_titles.get(book)
         } for book in books]
     }
-   
 
 app.include_router(api_router)
 

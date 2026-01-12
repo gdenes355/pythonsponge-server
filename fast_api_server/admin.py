@@ -15,7 +15,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from shared.ai.client_factory import get_llm_client
-from shared.ai.prompts import teacher_solution_recommender
+from shared.ai.clients.llm_client import LlmPriceTier
+from shared.ai.prompts import teacher_solution_recommender, teacher_test_recommender
 from shared.db import database
 from shared.server_settings import server_settings
 from fast_api_server.auth import get_current_user, is_admin
@@ -396,7 +397,7 @@ async def restart_ws_server(teacher_user=Depends(get_teacher_user)):
 class RecommendSolutionDto(BaseModel):
     guide: str
     starter_code: str
-@admin_router.post('/ai/teacher-solution-recommender', tags=['AI helpers'], summary='Generate a teacher solution recommender')
+@admin_router.post('/ai/teacher-solution-recommender', tags=['AI helpers'], summary='Generate a teacher solution')
 async def recommend_solution(body: RecommendSolutionDto, teacher_user=Depends(get_teacher_user)):
     """Recommend a solution to a challenge"""
     if not body.guide:
@@ -406,7 +407,7 @@ async def recommend_solution(body: RecommendSolutionDto, teacher_user=Depends(ge
 
     system_prompt = teacher_solution_recommender.get_system_prompt()
     prompt = teacher_solution_recommender.get_prompt(body.guide, body.starter_code)
-    resp = get_llm_client().generate_text(system_prompt=system_prompt, prompt=prompt)
+    resp, _ = get_llm_client().generate_text(system_prompt=system_prompt, prompt=prompt)
     lines = resp.split('\n')
     lines[0] = lines[0].replace('```python', '')
     lines[-1] = lines[-1].replace('```', '')
@@ -419,4 +420,28 @@ async def recommend_solution(body: RecommendSolutionDto, teacher_user=Depends(ge
     return {
         'res': 'succ',
         'data': resp
+    }
+
+class RecommendTestsDto(BaseModel):
+    guide: str
+    starter_code: str
+@admin_router.post('/ai/teacher-test-recommender', tags=['AI helpers'], summary='Generate tests')
+async def recommend_tests(body: RecommendTestsDto, teacher_user=Depends(get_teacher_user)):
+    if not body.guide:
+        raise HTTPException(status_code=400, detail='blank guide')
+    if not body.starter_code:
+        raise HTTPException(status_code=400, detail='blank starter code')
+    
+    system_prompt = teacher_test_recommender.get_system_prompt()
+    tools = teacher_test_recommender.get_function_declarations()
+    prompt = teacher_test_recommender.get_prompt(body.guide, body.starter_code)
+    text, tool_calls = get_llm_client(LlmPriceTier.STANDARD).generate_text(
+        system_prompt=system_prompt, 
+        prompt=prompt, 
+        function_declarations=tools,
+        )
+    return {
+        'res': 'succ',
+        'text': text,
+        'tests': tool_calls.get('generate_test', {}).get('tests', []),
     }

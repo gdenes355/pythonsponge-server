@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Optional
+from typing import Optional, Tuple, List, Any
 
 class LlmProvider(StrEnum):
     GEMINI = "GEMINI"
@@ -30,5 +30,6 @@ class LLMClient:
         prompt: str, 
         thinking_level: Optional[int] = None,
         temperature: Optional[float] = None,
-    ) -> str:
+        function_declarations: List[dict] = None,
+    ) -> Tuple[str, List[dict[str, Any]]]:
         pass

@@ -67,7 +67,7 @@ class FirestoreDatabase(Database):
         }
         await document_ref.set({
             'book': book,
-            'user': user,
+            'user': user_standardised,
             challenge: update,
         }, merge=True)
 
@@ -80,7 +80,7 @@ class FirestoreDatabase(Database):
         }
         await document_ref.set({
             'book': book,
-            'user': user,
+            'user': user_standardised,
             challenge: update,
         }, merge=True)
 

@@ -62,14 +62,20 @@ class GeminiClient(LLMClient):
         thinking_level: Optional[int] = None,
         temperature: Optional[float] = None,
         function_declarations: List[dict] = None,
+        force_function_calls: bool = False,
     ) -> Tuple[str, List[dict[str, Any]]]:
         config = types.GenerateContentConfig(
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         )
         function_declaration_names = set()
         if function_declarations is not None:
             tools = types.Tool(function_declarations=function_declarations)
             config.tools = [tools]
             function_declaration_names = set(function_declaration['name'] for function_declaration in function_declarations)
+        if force_function_calls:
+            tool_config = types.ToolConfig(function_calling_config=types.FunctionCallingConfig(mode="ANY")) 
+            config.tool_config = tool_config
+
         if thinking_level is not None:
             config.thinking_config = types.ThinkingConfig(
                 thinking_budget=thinking_level,

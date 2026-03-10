@@ -6,6 +6,7 @@ from typing import Optional, List
 import firebase_admin
 from firebase_admin import credentials, firestore_async, firestore
 from google.cloud.firestore_v1.field_path import FieldPath
+from google.cloud.firestore_v1.async_transaction import async_transactional
 
 from shared.db.database import Database
 from shared.models import ClassModel
@@ -63,6 +64,19 @@ class FirestoreDatabase(Database):
         document_ref = self.__firestore.collection('results').document(book_id)
         update = {
             'comment': comment,
+        }
+        await document_ref.set({
+            'book': book,
+            'user': user,
+            challenge: update,
+        }, merge=True)
+
+    async def record_ai_help_with_challenge(self, user: str, book: str, challenge: str):
+        user_standardised = self._standardise_username(user)
+        book_id = self._get_result_doc_id(book, user_standardised)
+        document_ref = self.__firestore.collection('results').document(book_id)
+        update = {
+            'ai_help': True,
         }
         await document_ref.set({
             'book': book,
@@ -153,6 +167,33 @@ class FirestoreDatabase(Database):
             await doc.set({'books': firestore.ArrayUnion([book]), 'disabled_books': firestore.ArrayRemove([book])}, merge=True)
         else:
             await doc.set({'disabled_books': firestore.ArrayUnion([book]), 'books': firestore.ArrayRemove([book])}, merge=True)
+
+    async def upsert_ai_help_use(self, user: str) -> Optional[datetime]:
+        user_standardised = self._standardise_username(user)
+        
+        # set timestamp to now regardless of whether it already exists. Return the old timestamp if it exists.
+        doc_ref = self.__firestore.collection('ai_help_uses').document(user_standardised)
+
+        tx = self.__firestore.transaction()
+
+        @async_transactional
+        async def tx_fn(tx):
+            snap = await doc_ref.get(transaction=tx)
+            try:
+                old_last_help_at = datetime.fromisoformat(snap.get("last_help_at").isoformat()) if snap.exists else None
+            except KeyError:
+                old_last_help_at = None
+            tx.set(
+                doc_ref,
+                {
+                    "last_help_at": firestore_async.SERVER_TIMESTAMP,
+                    "help_count": firestore.Increment(1),
+                },
+                merge=True,
+            )
+            return old_last_help_at
+
+        return await tx_fn(tx)
 
     def _compute_result_update(self, outcome: bool, code: str):
         if outcome:

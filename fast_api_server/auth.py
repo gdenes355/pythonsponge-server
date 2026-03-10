@@ -2,7 +2,7 @@ import json
 import re
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-from typing import Optional
+from typing import List, Optional
 
 import jwt
 import requests
@@ -115,6 +115,18 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
             raise jwt.ExpiredSignatureError()
         sub = payload['sub']
         return fernet.decrypt(sub.encode('utf-8')).decode('utf-8')
+    except jwt.ExpiredSignatureError:
+        raise AuthError("jwt token expired")
+    except jwt.InvalidTokenError:
+        raise AuthError("jwt token invalid")
+
+def get_current_user_roles(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> List[str]:
+    if not credentials:
+        raise AuthError('jwt token required')
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, server_settings.jwt_sercret_key, algorithms=['HS256'])
+        return payload['roles']
     except jwt.ExpiredSignatureError:
         raise AuthError("jwt token expired")
     except jwt.InvalidTokenError:

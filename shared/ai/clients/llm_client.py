@@ -31,5 +31,6 @@ class LLMClient:
         thinking_level: Optional[int] = None,
         temperature: Optional[float] = None,
         function_declarations: List[dict] = None,
+        force_function_calls: bool = False,
     ) -> Tuple[str, List[dict[str, Any]]]:
         pass

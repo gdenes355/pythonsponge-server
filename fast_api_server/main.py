@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta, timezone
 import os
+from typing import List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,12 +11,15 @@ from fast_api_server.admin import admin_router
 from fast_api_server.auth import (
     auth_router,
     get_current_user,
+    get_current_user_roles,
     register_auth_exception_handlers,
     is_admin
 )
 from fast_api_server.utils.open_api_utils import customise_open_api
 
-from shared.ai.clients.gemini_client import GeminiClient
+from shared.ai.client_factory import get_llm_client
+from shared.ai.clients.llm_client import LlmPriceTier
+from shared.ai.prompts import student_helper
 from shared.db import database
 from shared.books_repository import BooksRepository
 from shared.server_settings import server_settings
@@ -34,6 +39,7 @@ api_router.include_router(admin_router)
 
 db: database.Database = database.get_database()
 book_repo = BooksRepository()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -107,6 +113,43 @@ async def get_student_fashboard(user=Depends(get_current_user)):
             'title': book_titles.get(book)
         } for book in books]
     }
+
+class GetAiHintDto(BaseModel):
+    bookPath: str
+    challengeId: str
+    md: str
+    consoleText: str
+    code: str
+@api_router.post('/ai/hints', tags=["Student endpoints"], summary="Get AI hint")
+async def get_ai_hint(body: GetAiHintDto, user=Depends(get_current_user), roles: List[str] = Depends(get_current_user_roles)):
+    if not 'ai-enabled' in roles:
+        raise HTTPException(status_code=403, detail="You do not have access to AI help")
+    now = datetime.now(timezone.utc)
+    when = await db.upsert_ai_help_use(user)
+    if when and now - when < timedelta(seconds=15):
+        return {'res': 'ok', 'hint': "I'm on a short break to give you a chance to think. You can ask me again a bit later."}
+
+    if not body.bookPath or not body.challengeId:
+        raise HTTPException(status_code=400, detail="You must provide a valid book path and challenge ID")
+    
+    if not body.code:
+        return {'res': 'ok', 'text': text, 'hint': "Please provide your code so I can help you." }
+
+    if not body.md:
+        raise HTTPException(status_code=400, detail="You must provide a valid challenge description")
+    
+    system_prompt = student_helper.get_system_prompt()
+    tools = student_helper.get_function_declarations()
+    prompt = student_helper.get_prompt(body.md, body.code, body.consoleText)
+    text, tool_calls = get_llm_client(LlmPriceTier.LITE).generate_text(
+        system_prompt=system_prompt, 
+        prompt=prompt, 
+        function_declarations=tools,
+        force_function_calls=True,
+    )
+    hint = tool_calls.get('send_hint', {}).get('hint', '') or 'Check your code and the challenge description once more very carefully. Can you spot what went wrong?'
+    await db.record_ai_help_with_challenge(user, body.bookPath, body.challengeId)
+    return {'res': 'ok', 'text': text, 'hint': hint }
 
 app.include_router(api_router)
 

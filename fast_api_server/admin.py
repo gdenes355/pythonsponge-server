@@ -407,7 +407,7 @@ async def recommend_solution(body: RecommendSolutionDto, teacher_user=Depends(ge
 
     system_prompt = teacher_solution_recommender.get_system_prompt()
     prompt = teacher_solution_recommender.get_prompt(body.guide, body.starter_code)
-    resp, _ = get_llm_client().generate_text(system_prompt=system_prompt, prompt=prompt)
+    resp, _ = get_llm_client().generate_text(system_prompt=system_prompt, prompt=prompt, force_function_calls=True)
     lines = resp.split('\n')
     lines[0] = lines[0].replace('```python', '')
     lines[-1] = lines[-1].replace('```', '')
@@ -439,7 +439,8 @@ async def recommend_tests(body: RecommendTestsDto, teacher_user=Depends(get_teac
         system_prompt=system_prompt, 
         prompt=prompt, 
         function_declarations=tools,
-        )
+        force_function_calls=True,
+    )
     return {
         'res': 'succ',
         'text': text,

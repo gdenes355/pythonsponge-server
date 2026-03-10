@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from enum import StrEnum
 from typing import Dict, List, Optional
 
@@ -70,7 +71,15 @@ class Database(ABC):
         pass
 
     @abstractmethod
+    async def upsert_ai_help_use(self, user: str) -> Optional[datetime]:
+        pass
+
+    @abstractmethod
     async def add_result_comment(self, user: str, book: str, challenge: str, comment: str):
+        pass
+
+    @abstractmethod
+    async def record_ai_help_with_challenge(self, user: str, book: str, challenge: str):
         pass
 
     def _standardise_username(self, user: str):

@@ -1,3 +1,4 @@
+import asyncio
 import urllib.parse
 from datetime import datetime
 from random import choices
@@ -10,6 +11,9 @@ from google.cloud.firestore_v1.async_transaction import async_transactional
 
 from shared.db.database import Database
 from shared.models import ClassModel
+
+# Firestore 'in' / 'not-in' queries support at most 30 comparison values.
+_FIRESTORE_IN_LIMIT = 30
 
 
 class FirestoreDatabase(Database):
@@ -43,9 +47,18 @@ class FirestoreDatabase(Database):
         book_ids = [self._get_result_doc_id(book, username) for username in user_names_standardised]
         if not book_ids:
             return []
-        docs = self.__firestore.collection('results')\
-            .where(FieldPath.document_id(), 'in', book_ids).stream()
-        data = [doc._data async for doc in docs]
+
+        async def fetch_chunk(ids: List[str]):
+            docs = self.__firestore.collection('results')\
+                .where(FieldPath.document_id(), 'in', ids).stream()
+            return [doc._data async for doc in docs]
+
+        chunks = [
+            book_ids[i:i + _FIRESTORE_IN_LIMIT]
+            for i in range(0, len(book_ids), _FIRESTORE_IN_LIMIT)
+        ]
+        chunk_results = await asyncio.gather(*[fetch_chunk(chunk) for chunk in chunks])
+        data = [doc for chunk in chunk_results for doc in chunk]
         usernames_with_res = set([d['user'] for d in data])
         for username in user_names_standardised:
             if username not in usernames_with_res:
